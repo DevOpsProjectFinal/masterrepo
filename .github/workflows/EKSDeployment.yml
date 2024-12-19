@@ -1,0 +1,55 @@
+name: Master Repo CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Master Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Update Submodules
+        run: |
+          git submodule update --remote --merge
+          git add .
+          git commit -m "Updated submodules" || echo "No changes to commit"
+
+  build-and-push:
+    needs: update-submodules
+    runs-on: ubuntu-latest
+    env:
+      ECR_REPO: "<account-id>.dkr.ecr.<region>.amazonaws.com"
+    steps:
+      - name: Checkout Master Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Build Backend Docker Image
+        run: |
+          docker build -t ${ECR_REPO}/backend-api:latest ./backend-api
+          docker push ${ECR_REPO}/backend-api:latest
+
+      - name: Build Frontend Docker Image
+        run: |
+          docker build -t ${ECR_REPO}/frontend-ui:latest ./frontend-ui
+          docker push ${ECR_REPO}/frontend-ui:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EKS
+        run: |
+          helm upgrade --install backend-api ./deployment/backend \
+            --set image.repository=${{ env.ECR_REPO }}/backend-api \
+            --set image.tag=latest
+          helm upgrade --install frontend-ui ./deployment/frontend \
+            --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
+            --set image.tag=latest
