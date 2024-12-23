@@ -9,6 +9,11 @@ jobs:
   update-submodules:
     runs-on: ubuntu-latest
     steps:
+      - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: |
+          ${{ secrets.SSH_PRIVATE_KEY }}
+
       # Step 1: Checkout the master repository
       - name: Checkout Master Repository
         uses: actions/checkout@v3
