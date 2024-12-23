@@ -1,4 +1,4 @@
-name: Deploy with Submodules
+name: Master Repo CI/CD
 
 on:
   push:
@@ -6,38 +6,82 @@ on:
       - main
 
 jobs:
-  deploy:
+  update-submodules:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Check out the repository
+      # Step 1: Checkout the master repository
+      - name: Checkout Master Repository
         uses: actions/checkout@v3
         with:
           submodules: 'recursive' # Clone submodules recursively
           fetch-depth: 0          # Fetch all history for accurate submodule checkout
 
-      - name: Build and Deploy
+      # Step 2: Set up SSH key for submodule authentication
+      - name: Set up SSH key for submodules
         run: |
-          # Your build and deployment commands go here
-          echo "Building and deploying..."
-          
-          # Example: Deploy backend
-          docker build -t your-ecr-repo/backend-api:latest ./backend-api
-          docker push your-ecr-repo/backend-api:latest
-          
-          # Example: Deploy frontend
-          docker build -t your-ecr-repo/frontend-ui:latest ./frontend-ui
-          docker push your-ecr-repo/frontend-ui:latest
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          eval $(ssh-agent -s)
+          ssh-add ~/.ssh/id_rsa
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-          # Example: Deploy to Kubernetes using Helm
+      # Step 3: Update submodules
+      - name: Update Submodules
+        run: |
+          git submodule update --remote --merge
+          git add .
+          git commit -m "Updated submodules" || echo "No changes to commit"
+
+  build-and-push:
+    needs: update-submodules
+    runs-on: ubuntu-latest
+    env:
+      ECR_REPO: "<account-id>.dkr.ecr.<region>.amazonaws.com"
+    steps:
+      # Step 1: Checkout the master repository again to get the latest code
+      - name: Checkout Master Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive' # Clone submodules recursively
+          fetch-depth: 0          # Fetch all history for accurate submodule checkout
+
+      # Step 2: Set up SSH key for submodules
+      - name: Set up SSH key for submodules
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Step 3: Build Backend Docker Image
+      - name: Build Backend Docker Image
+        run: |
+          docker build -t ${ECR_REPO}/backend-api:latest ./backend-api
+          docker push ${ECR_REPO}/backend-api:latest
+
+      # Step 4: Build Frontend Docker Image
+      - name: Build Frontend Docker Image
+        run: |
+          docker build -t ${ECR_REPO}/frontend-ui:latest ./frontend-ui
+          docker push ${ECR_REPO}/frontend-ui:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Deploy Backend API to EKS
+      - name: Deploy to EKS - Backend API
+        run: |
           helm upgrade --install backend-api ./deployment/backend \
-            --set image.repository=your-ecr-repo/backend-api \
+            --set image.repository=${{ env.ECR_REPO }}/backend-api \
             --set image.tag=latest
+
+      # Step 2: Deploy Frontend UI to EKS
+      - name: Deploy to EKS - Frontend UI
+        run: |
           helm upgrade --install frontend-ui ./deployment/frontend \
-            --set image.repository=your-ecr-repo/frontend-ui \
+            --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
             --set image.tag=latest
