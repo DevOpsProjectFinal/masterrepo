@@ -9,7 +9,7 @@ jobs:
   update-submodules:
     runs-on: ubuntu-latest
     steps:
-    # Step 1: SSH for secure checkout
+      # Step 1: SSH for secure checkout
       - name: SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -23,7 +23,6 @@ jobs:
           submodules: 'recursive' # Clone submodules recursively
           fetch-depth: 0          # Fetch all history for accurate submodule checkout
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
       
       # Step 3: Update submodules
       - name: Update Submodules
@@ -50,16 +49,7 @@ jobs:
         with:
           submodules: 'recursive' # Clone submodules recursively
           fetch-depth: 0          # Fetch all history for accurate submodule checkout
-
-      # Step 2: Set up SSH key for submodules
-      - name: Set up SSH key for submodules
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # Step 3: Build Backend Docker Image
       - name: Build Backend Docker Image
