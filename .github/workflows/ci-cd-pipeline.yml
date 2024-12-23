@@ -18,6 +18,7 @@ jobs:
 
       - name: Update Submodules
         run: |
+          git config --global url."https://<token>@github.com/".insteadOf "https://github.com/"
           git submodule update --remote --merge
           git add .
           git commit -m "Updated submodules" || echo "No changes to commit"
