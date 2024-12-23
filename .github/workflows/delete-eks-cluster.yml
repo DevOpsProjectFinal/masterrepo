@@ -1,0 +1,45 @@
+name: Delete EKS Cluster
+
+on:
+  workflow_dispatch:  # Allows you to manually trigger the workflow
+
+jobs:
+  eks-cluster-destroy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository to access Terraform files
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up AWS credentials to use Terraform with AWS (GitHub Secrets)
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 3: Install Terraform
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.6
+
+      # Step 4: Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform/eks-cluster
+
+      # Step 5: Terraform Destroy (tears down the infrastructure)
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
+        working-directory: terraform/eks-cluster
+
+      # Step 6: Delete EKS Cluster
+      - name: Delete EKS Cluster
+        run: |
+          aws eks delete-cluster --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

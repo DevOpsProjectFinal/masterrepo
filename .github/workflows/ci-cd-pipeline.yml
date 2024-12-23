@@ -9,14 +9,14 @@ jobs:
   update-submodules:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: SSH for secure checkout
+      # Step 1: Set up SSH key for submodule access
       - name: SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 2: Checkout the master repository
+      # Step 2: Checkout the master repository and submodules
       - name: Checkout Master Repository
         uses: actions/checkout@v3
         with:
@@ -35,15 +35,16 @@ jobs:
     needs: update-submodules
     runs-on: ubuntu-latest
     env:
-      ECR_REPO: "<account-id>.dkr.ecr.<region>.amazonaws.com"
+      ECR_REPO: "796973482644.dkr.ecr.us-east-1.amazonaws.com"
     steps:
+      # Step 1: Set up SSH key for submodule access
       - name: SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
-
-      # Step 1: Checkout the master repository again to get the latest code
+      
+      # Step 2: Checkout the master repository again to get the latest code
       - name: Checkout Master Repository
         uses: actions/checkout@v3
         with:
@@ -51,13 +52,51 @@ jobs:
           fetch-depth: 0          # Fetch all history for accurate submodule checkout
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 3: Build Backend Docker Image
+      # Step 3: AWS CLI: Login to ECR
+      - name: Log in to Amazon ECR
+        run: |
+          aws --version  # Check AWS CLI version
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.ECR_REPO }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Step 4: Run Backend Unit Tests
+      - name: Run Backend Unit Tests
+        run: |
+          cd backend-api
+          # Assuming you're using npm or yarn for testing
+          npm install
+          npm test  # or your specific test command (e.g., jest, mocha)
+      
+      # Step 5: Run Frontend Unit Tests
+      - name: Run Frontend Unit Tests
+        run: |
+          cd frontend-ui
+          # Assuming you're using npm or yarn for testing
+          npm install
+          npm test  # or your specific test command (e.g., jest, mocha)
+
+      # Step 6: Security Testing with Trivy (or other tools like Snyk)
+      - name: Run Security Tests with Trivy
+        run: |
+          # Install Trivy (Security Scanner for Docker images)
+          curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.39.1/trivy_0.39.1_Linux-64bit.deb -o trivy.deb
+          sudo dpkg -i trivy.deb
+          
+          # Run Trivy to scan for vulnerabilities in the backend Docker image
+          trivy image --no-progress --exit-code 1 --severity HIGH,CRITICAL ${ECR_REPO}/backend-api:latest
+
+          # Run Trivy to scan for vulnerabilities in the frontend Docker image
+          trivy image --no-progress --exit-code 1 --severity HIGH,CRITICAL ${ECR_REPO}/frontend-ui:latest
+
+      # Step 7: Build Backend Docker Image
       - name: Build Backend Docker Image
         run: |
           docker build -t ${ECR_REPO}/backend-api:latest ./backend-api
           docker push ${ECR_REPO}/backend-api:latest
 
-      # Step 4: Build Frontend Docker Image
+      # Step 8: Build Frontend Docker Image
       - name: Build Frontend Docker Image
         run: |
           docker build -t ${ECR_REPO}/frontend-ui:latest ./frontend-ui
@@ -67,14 +106,33 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Deploy Backend API to EKS
+    # Step 1: Retrieve aws credentials
+      - name: Set up kubectl to interact with EKS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 2: Update Kubeconfig for EKS
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --name <eks-cluster-name> --region ${{ secrets.AWS_REGION }}
+
+      # Step 3: Install Helm
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm version
+
+      # Step 4: Deploy Backend API to EKS
       - name: Deploy to EKS - Backend API
         run: |
           helm upgrade --install backend-api ./deployment/backend \
             --set image.repository=${{ env.ECR_REPO }}/backend-api \
             --set image.tag=latest
 
-      # Step 2: Deploy Frontend UI to EKS
+      # Step 5: Deploy Frontend UI to EKS
       - name: Deploy to EKS - Frontend UI
         run: |
           helm upgrade --install frontend-ui ./deployment/frontend \

@@ -1,0 +1,29 @@
+name: Deploy to EKS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Set up AWS credentials for Terraform and kubectl
+      - name: Set up AWS CLI credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 2: Set up kubectl to interact with EKS
+      - name: Set up kubectl for EKS
+        run: |
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
+
+      # Step 3: Deploy backend and frontend to EKS
+      - name: Deploy to EKS - Backend
+        run: kubectl apply -f ./deployment/backend/deployment.yaml
+      - name: Deploy to EKS - Frontend
+        run: kubectl apply -f ./deployment/frontend/deployment.yaml
