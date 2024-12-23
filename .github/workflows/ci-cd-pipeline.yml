@@ -9,13 +9,14 @@ jobs:
   update-submodules:
     runs-on: ubuntu-latest
     steps:
+    # Step 1: SSH Key for Security
       - name: SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: |
             ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 1: Checkout the master repository
+      # Step 2: Checkout the master repository
       - name: Checkout Master Repository
         uses: actions/checkout@v3
         with:
@@ -37,14 +38,21 @@ jobs:
     env:
       ECR_REPO: "<account-id>.dkr.ecr.<region>.amazonaws.com"
     steps:
-      # Step 1: Checkout the master repository again to get the latest code
+      # Step 1: SSH Key for Security
+      - name: SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Step 2: Checkout the master repository again to get the latest code
       - name: Checkout Master Repository
         uses: actions/checkout@v3
         with:
           submodules: 'recursive' # Clone submodules recursively
           fetch-depth: 0          # Fetch all history for accurate submodule checkout
 
-      # Step 2: Set up SSH key for submodules
+      # Step 3: Set up SSH key for submodules
       - name: Set up SSH key for submodules
         run: |
           mkdir -p ~/.ssh
@@ -54,13 +62,13 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 3: Build Backend Docker Image
+      # Step 4: Build Backend Docker Image
       - name: Build Backend Docker Image
         run: |
           docker build -t ${ECR_REPO}/backend-api:latest ./backend-api
           docker push ${ECR_REPO}/backend-api:latest
 
-      # Step 4: Build Frontend Docker Image
+      # Step 5: Build Frontend Docker Image
       - name: Build Frontend Docker Image
         run: |
           docker build -t ${ECR_REPO}/frontend-ui:latest ./frontend-ui
