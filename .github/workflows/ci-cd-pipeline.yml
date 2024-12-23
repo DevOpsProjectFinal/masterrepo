@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Checkout Master Repository
         uses: actions/checkout@v3
-        uses: moia-oss/setup-eksctl@v1  # Install eksctl
+              moia-oss/setup-eksctl@v1  # Install eksctl
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           submodules: 'recursive' # Clone submodules recursively
