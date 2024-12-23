@@ -51,6 +51,7 @@ jobs:
         with:
           submodules: 'recursive' # Clone submodules recursively
           fetch-depth: 0          # Fetch all history for accurate submodule checkout
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       # Step 3: Set up SSH key for submodules
       - name: Set up SSH key for submodules
