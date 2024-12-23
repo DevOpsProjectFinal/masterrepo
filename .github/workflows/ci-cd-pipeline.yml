@@ -1,4 +1,4 @@
-name: Master Repo CI/CD
+name: Deploy with Submodules
 
 on:
   push:
@@ -6,62 +6,38 @@ on:
       - main
 
 jobs:
-  update-submodules:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Checkout Master Repository
-        uses: actions/checkout@v3
-        with:
-          submodules: 'recursive' # Clone submodules recursively
-          fetch-depth: 0          # Fetch all history for accurate submodule checkout
-
-      - name: Update Submodules
-        run: |
-          git submodule update --remote --merge
-          git add .
-          git commit -m "Updated submodules" || echo "No changes to commit"
-
-  build-and-push:
-    needs: update-submodules
-    runs-on: ubuntu-latest
-    env:
-      ECR_REPO: "<account-id>.dkr.ecr.<region>.amazonaws.com"
-    steps:
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Checkout Master Repository
-        uses: actions/checkout@v3
-        with:
-          submodules: 'recursive' # Clone submodules recursively
-          fetch-depth: 0          # Fetch all history for accurate submodule checkout
-
-      - name: Build Backend Docker Image
-        run: |
-          docker build -t ${ECR_REPO}/backend-api:latest ./backend-api
-          docker push ${ECR_REPO}/backend-api:latest
-
-      - name: Build Frontend Docker Image
-        run: |
-          docker build -t ${ECR_REPO}/frontend-ui:latest ./frontend-ui
-          docker push ${ECR_REPO}/frontend-ui:latest
-
   deploy:
-    needs: build-and-push
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy to EKS
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Check out the repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive' # Clone submodules recursively
+          fetch-depth: 0          # Fetch all history for accurate submodule checkout
+
+      - name: Build and Deploy
         run: |
+          # Your build and deployment commands go here
+          echo "Building and deploying..."
+          
+          # Example: Deploy backend
+          docker build -t your-ecr-repo/backend-api:latest ./backend-api
+          docker push your-ecr-repo/backend-api:latest
+          
+          # Example: Deploy frontend
+          docker build -t your-ecr-repo/frontend-ui:latest ./frontend-ui
+          docker push your-ecr-repo/frontend-ui:latest
+
+          # Example: Deploy to Kubernetes using Helm
           helm upgrade --install backend-api ./deployment/backend \
-            --set image.repository=${{ env.ECR_REPO }}/backend-api \
+            --set image.repository=your-ecr-repo/backend-api \
             --set image.tag=latest
           helm upgrade --install frontend-ui ./deployment/frontend \
-            --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
+            --set image.repository=your-ecr-repo/frontend-ui \
             --set image.tag=latest
