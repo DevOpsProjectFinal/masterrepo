@@ -1,6 +1,6 @@
 [submodule "backend-api"]
 	path = backend-api
-	url = https://github.com/DevOpsProjectFinal/backend-api.git
+	url = git@github.com:DevOpsProjectFinal/backend-api.git
 [submodule "frontend-ui"]
 	path = frontend-ui
-	url = https://github.com/DevOpsProjectFinal/frontend-ui.git
+	url = git@github.com:DevOpsProjectFinal/frontend-ui.git
