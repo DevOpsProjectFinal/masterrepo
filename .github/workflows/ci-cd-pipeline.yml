@@ -9,13 +9,6 @@ jobs:
   update-submodules:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the master repository
-      - name: Checkout Master Repository
-        uses: actions/checkout@v3
-        with:
-          submodules: 'recursive' # Clone submodules recursively
-          fetch-depth: 0          # Fetch all history for accurate submodule checkout
-
       # Step 2: Set up SSH key for submodule authentication
       - name: Set up SSH key for submodules
         run: |
@@ -25,6 +18,14 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      # Step 1: Checkout the master repository
+      - name: Checkout Master Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive' # Clone submodules recursively
+          fetch-depth: 0          # Fetch all history for accurate submodule checkout
+
+      
       # Step 3: Update submodules
       - name: Update Submodules
         run: |
