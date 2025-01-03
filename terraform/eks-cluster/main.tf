@@ -4,7 +4,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Create a VPC (Virtual Private Cloud)
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
   name = "eks-vpc"
@@ -16,7 +15,6 @@ module "vpc" {
   azs = var.availability_zones
 }
 
-# Create EKS Cluster
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = var.cluster_name
