@@ -26,7 +26,7 @@ variable "public_subnets" {
 }
 
 variable "cluster_name" {
-  description = "EKS cluster name"
+  description = "EKS cluster to test deployments for multiple services"
   default     = "my-first-eks-cluster"
 }
 
