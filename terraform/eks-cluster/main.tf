@@ -18,7 +18,7 @@ module "eks" {
   source = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
   cluster_name    = var.cluster_name
-  cluster_version = "1.24"  # Update to a supported Kubernetes version
+  cluster_version = "1.31"
   vpc_id          = module.vpc.vpc_id
   subnet_ids      = module.vpc.private_subnets
 
@@ -30,30 +30,4 @@ module "eks" {
       instance_type    = var.instance_type
     }
   }
-
-  enable_encryption = true
-  encryption_config = [
-    {
-      resources = ["*"]
-      provider = {
-        key_arn = aws_kms_key.eks.arn
-      }
-    }
-  ]
-
-  # KMS Key and Alias
-  kms_key_description = "EKS Cluster KMS Key"
-  kms_key_deletion_window_in_days = 10
-  kms_key_enable_key_rotation = true
-}
-
-resource "aws_kms_key" "eks" {
-  description             = module.eks.kms_key_description
-  deletion_window_in_days = module.eks.kms_key_deletion_window_in_days
-  enable_key_rotation     = module.eks.kms_key_enable_key_rotation
-}
-
-resource "aws_kms_alias" "eks" {
-  name          = "alias/${var.cluster_name}-eks"
-  target_key_id = aws_kms_key.eks.key_id
 }
