@@ -32,13 +32,3 @@ module "eks" {
     }
   }
 }
-
-# Output the EKS Cluster Name
-output "cluster_name" {
-  value = module.eks.cluster_name
-}
-
-# Output the kubeconfig to use with kubectl
-output "kubeconfig" {
-  value = module.eks.kubeconfig
-}
