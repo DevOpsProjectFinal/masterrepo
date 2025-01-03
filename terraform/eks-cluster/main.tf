@@ -19,8 +19,8 @@ module "eks" {
   version = "~> 20.0"
   cluster_name    = var.cluster_name
   cluster_version = "1.21"
-  subnets         = module.vpc.private_subnets
   vpc_id          = module.vpc.vpc_id
+  subnet_ids      = module.vpc.private_subnets  # Correct argument name
   node_groups = {
     eks_nodes = {
       desired_capacity = var.node_group_size
