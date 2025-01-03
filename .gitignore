@@ -1,0 +1,4 @@
+/terraform/eks-cluster/.terraform/*
+/terraform/eks-cluster/.terraform.lock.hcl
+/terraform/eks-cluster/terraform.tfstate
+
