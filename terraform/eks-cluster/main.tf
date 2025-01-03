@@ -21,8 +21,13 @@ module "eks" {
   cluster_version = "1.21"
   vpc_id          = module.vpc.vpc_id
   subnet_ids      = module.vpc.private_subnets  # Correct argument name
+}
 
-  managed_node_groups = {
+module "node_groups" {
+  source = "terraform-aws-modules/eks/aws//modules/node_groups"
+  version = "~> 20.0"
+  cluster_name = module.eks.cluster_id
+  node_groups = {
     eks_nodes = {
       desired_capacity = var.node_group_size
       max_capacity     = 5
