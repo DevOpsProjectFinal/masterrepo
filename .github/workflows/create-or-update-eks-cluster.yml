@@ -25,24 +25,24 @@ jobs:
         id: verify-cluster
         run: |
           CLUSTER_EXISTS=$(aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --query "cluster.status" --output text || echo "NOT_FOUND")
-          echo "::set-output name=cluster_exists::$CLUSTER_EXISTS"
+          echo "cluster_exists=$CLUSTER_EXISTS" >> $GITHUB_ENV
 
       # Step 3: Setup terraform
       - name: Set up Terraform
-        if: steps.verify-cluster.outputs.cluster_exists == 'NOT_FOUND'
+        if: env.cluster_exists == 'NOT_FOUND'
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 1.0.0
+          terraform_version: 1.5.0
 
       # Step 4: Terraform Init
       - name: Terraform Init
-        if: steps.verify-cluster.outputs.cluster_exists == 'NOT_FOUND'
+        if: env.cluster_exists == 'NOT_FOUND'
         run: terraform init
         working-directory: ./terraform/eks-cluster
       
-      # Step 5 : Create eks cluster if not found
+      # Step 5: Create EKS cluster if not found
       - name: Terraform Apply
-        if: steps.verify-cluster.outputs.cluster_exists == 'NOT_FOUND'
+        if: env.cluster_exists == 'NOT_FOUND'
         run: terraform apply -auto-approve
         working-directory: ./terraform/eks-cluster
         env:
