@@ -4,7 +4,7 @@ provider "aws" {
 
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
-  version = ">= 3.0.0"
+  version = ">= 5.17.0"
   name = "eks-vpc"
   cidr = var.vpc_cidr
   enable_dns_hostnames = true
