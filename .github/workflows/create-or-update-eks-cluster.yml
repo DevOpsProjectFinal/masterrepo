@@ -35,7 +35,7 @@ jobs:
       - name: Terraform Init
         if: steps.verify-cluster.outputs.cluster_exists == 'NOT_FOUND'
         run: terraform init
-        working-directory: ./../terraform/eks-cluster
+        working-directory: ./terraform/eks-cluster
       
       # Step 5 : Create eks cluster if not found
       - name: Terraform Apply
@@ -44,7 +44,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        working-directory: ./../terraform/eks-cluster
+        working-directory: ./terraform/eks-cluster
 
       # Step 6: Set up kubectl to interact with EKS
       - name: Set up kubectl for EKS
