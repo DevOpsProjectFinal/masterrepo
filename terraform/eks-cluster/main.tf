@@ -54,7 +54,7 @@ data "aws_cloudwatch_log_group" "existing" {
 }
 
 locals {
-  log_group_exists = length(data.aws_cloudwatch_log_group.existing.log_group_name) > 0
+  log_group_exists = length(data.aws_cloudwatch_log_group.existing.arn) > 0
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
