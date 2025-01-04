@@ -15,8 +15,9 @@ module "vpc" {
 }
 
 module "eks" {
-  source = "terraform-aws-modules/eks/aws"
+  source  = "terraform-aws-modules/eks/aws"
   version = "~> 20.0"
+  
   cluster_name    = var.cluster_name
   cluster_version = "1.24"  # Update to a supported Kubernetes version
   vpc_id          = module.vpc.vpc_id
@@ -30,21 +31,28 @@ module "eks" {
       instance_type    = var.instance_type
     }
   }
-
-  encryption_config = [
-    {
-      resources = ["secrets"]
-      provider = {
-        key_arn = aws_kms_key.eks.arn
-      }
-    }
-  ]
 }
 
 resource "aws_kms_key" "eks" {
   description             = "EKS Cluster KMS Key"
   deletion_window_in_days = 10
   enable_key_rotation     = true
+}
+
+resource "aws_eks_cluster" "main" {
+  name     = module.eks.cluster_name
+  role_arn = module.eks.cluster_iam_role_arn
+
+  vpc_config {
+    subnet_ids = module.vpc.private_subnets
+  }
+
+  encryption_config {
+    provider {
+      key_arn = aws_kms_key.eks.arn
+    }
+    resources = ["secrets"]
+  }
 }
 
 resource "aws_kms_alias" "eks" {
