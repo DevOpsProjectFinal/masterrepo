@@ -26,28 +26,23 @@ jobs:
           echo "CLUSTER_EXISTS=$CLUSTER_STATUS" >> $GITHUB_ENV
 
       - name: Set up Terraform
-        if: env.CLUSTER_EXISTS == 'NOT_FOUND'
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.8.4
 
       - name: Terraform Init
-        if: env.CLUSTER_EXISTS == 'NOT_FOUND'
         run: terraform init
         working-directory: ./terraform/eks-cluster
         env:
           TF_LOG: DEBUG  # Enable detailed logging
 
-      - name: Terraform destroy
-        run: terraform destroy -auto-approve
-        working-directory: ./terraform/eks-cluster
-        env:
-          TF_LOG: DEBUG  # Enable detailed logging
-      
-
-      - name: Terraform Apply
-        if: env.CLUSTER_EXISTS == 'NOT_FOUND'
-        run: terraform apply -auto-approve
+      - name: Terraform Apply or Update
+        run: |
+          if [[ "$CLUSTER_EXISTS" == "NOT_FOUND" ]]; then
+            terraform apply -auto-approve
+          else
+            terraform apply -refresh-only -auto-approve
+          fi
         working-directory: ./terraform/eks-cluster
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
