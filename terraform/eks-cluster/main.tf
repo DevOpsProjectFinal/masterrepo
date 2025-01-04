@@ -31,26 +31,20 @@ module "eks" {
     }
   }
 
-  enable_encryption = true
   encryption_config = [
     {
-      resources = ["*"]
+      resources = ["secrets"]
       provider = {
         key_arn = aws_kms_key.eks.arn
       }
     }
   ]
-
-  # KMS Key and Alias
-  kms_key_description = "EKS Cluster KMS Key"
-  kms_key_deletion_window_in_days = 10
-  kms_key_enable_key_rotation = true
 }
 
 resource "aws_kms_key" "eks" {
-  description             = module.eks.kms_key_description
-  deletion_window_in_days = module.eks.kms_key_deletion_window_in_days
-  enable_key_rotation     = module.eks.kms_key_enable_key_rotation
+  description             = "EKS Cluster KMS Key"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
 }
 
 resource "aws_kms_alias" "eks" {
