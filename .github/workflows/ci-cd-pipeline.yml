@@ -84,6 +84,10 @@ jobs:
           curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.39.1/trivy_0.39.1_Linux-64bit.deb -o trivy.deb
           sudo dpkg -i trivy.deb
           
+          # Build Docker images for scanning
+          docker build -t ${ECR_REPO}/backend-api:latest ./backend-api
+          docker build -t ${ECR_REPO}/frontend-ui:latest ./frontend-ui
+          
           # Run Trivy to scan for vulnerabilities in the backend Docker image
           trivy image --no-progress --exit-code 1 --severity HIGH,CRITICAL ${ECR_REPO}/backend-api:latest
 
@@ -117,7 +121,7 @@ jobs:
       # Step 2: Update Kubeconfig for EKS
       - name: Update kubeconfig for EKS
         run: |
-          aws eks update-kubeconfig --name <eks-cluster-name> --region ${{ secrets.AWS_REGION }}
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
       # Step 3: Install Helm
       - name: Install Helm
