@@ -9,10 +9,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Set up AWS credentials for Terraform and kubectl
+      # Step 1: Check out the code from the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Step 2: Set up AWS CLI credentials
       - name: Set up AWS CLI credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -20,42 +21,44 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 2: Verify EKS cluster exists
+      # Step 3: Verify EKS cluster exists
       - name: Verify EKS Cluster
         id: verify-cluster
         run: |
-          CLUSTER_EXISTS=$(aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --query "cluster.status" --output text || echo "NOT_FOUND")
-          echo "cluster_exists=$CLUSTER_EXISTS" >> $GITHUB_ENV
+          CLUSTER_STATUS=$(aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --query "cluster.status" --output text || echo "NOT_FOUND")
+          echo "CLUSTER_EXISTS=$CLUSTER_STATUS" >> $GITHUB_ENV
 
-      # Step 3: Setup terraform
+      # Step 4: Set up Terraform if the cluster does not exist
       - name: Set up Terraform
-        if: env.cluster_exists == 'NOT_FOUND'
+        if: env.CLUSTER_EXISTS == 'NOT_FOUND'
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.8.4
 
-      # Step 4: Terraform Init
+      # Step 5: Terraform Init
       - name: Terraform Init
-        if: env.cluster_exists == 'NOT_FOUND'
+        if: env.CLUSTER_EXISTS == 'NOT_FOUND'
         run: terraform init
         working-directory: ./terraform/eks-cluster
       
-      # Step 5: Create EKS cluster if not found
+      # Step 6: Create EKS cluster if not found
       - name: Terraform Apply
-        if: env.cluster_exists == 'NOT_FOUND'
+        if: env.CLUSTER_EXISTS == 'NOT_FOUND'
         run: terraform apply -auto-approve
         working-directory: ./terraform/eks-cluster
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # Step 6: Set up kubectl to interact with EKS
+      # Step 7: Set up kubectl to interact with EKS
       - name: Set up kubectl for EKS
         run: |
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-      # Step 7: Deploy backend and frontend to EKS
+      # Step 8: Deploy backend to EKS
       - name: Deploy to EKS - Backend
         run: kubectl apply -f ./deployment/backend/deployment.yaml
+
+      # Step 9: Deploy frontend to EKS
       - name: Deploy to EKS - Frontend
         run: kubectl apply -f ./deployment/frontend/deployment.yaml
