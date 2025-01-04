@@ -39,3 +39,13 @@ variable "instance_type" {
   description = "The EC2 instance type for the worker nodes"
   default     = "t3.medium"
 }
+
+variable "vpc_id" {
+  description = "The VPC ID where the EKS cluster will be created"
+  type        = string
+}
+
+variable "subnets" {
+  description = "The subnets where the EKS cluster will be created"
+  type        = list(string)
+}
