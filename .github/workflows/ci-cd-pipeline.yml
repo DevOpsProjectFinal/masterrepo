@@ -83,7 +83,7 @@ jobs:
           # Install Trivy (Security Scanner for Docker images)
           curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.39.1/trivy_0.39.1_Linux-64bit.deb -o trivy.deb
           sudo dpkg -i trivy.deb
-          
+
           # Build Docker images for scanning
           docker build -t ${ECR_REPO}/backend-api:latest ./backend-api
           docker build -t ${ECR_REPO}/frontend-ui:latest ./frontend-ui
