@@ -50,11 +50,6 @@ resource "aws_kms_alias" "eks" {
   target_key_id = aws_kms_key.eks.key_id
 }
 
-resource "aws_cloudwatch_log_group" "eks" {
-  name              = "/aws/eks/${var.cluster_name}/cluster-${random_string.suffix.result}"
-  retention_in_days = 90
-}
-
 # Check if the log group already exists
 data "aws_cloudwatch_log_group" "existing" {
   name = "/aws/eks/${var.cluster_name}/cluster"
