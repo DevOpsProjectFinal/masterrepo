@@ -2,7 +2,6 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Generate a random string to ensure unique resource names
 resource "random_string" "suffix" {
   length  = 8
   special = false
@@ -25,14 +24,14 @@ module "eks" {
   version = "~> 20.0"
   
   cluster_name    = var.cluster_name
-  cluster_version = "1.24"  # Update to a supported Kubernetes version
+  cluster_version = "1.24"
   vpc_id          = module.vpc.vpc_id
   subnet_ids      = module.vpc.private_subnets
 
   self_managed_node_groups = {
     eks_nodes = {
       desired_capacity = var.node_group_size
-      max_capacity     = 5
+      max_capacity     = 2
       min_capacity     = 1
       instance_type    = var.instance_type
     }
@@ -50,12 +49,11 @@ resource "aws_kms_alias" "eks" {
   target_key_id = aws_kms_key.eks.key_id
 }
 
-# Check if the log group already exists
 data "aws_cloudwatch_log_group" "existing" {
   name = "/aws/eks/${var.cluster_name}/cluster"
+  ignore_errors = true
 }
 
-# Conditionally create the log group only if it doesn't already exist
 resource "aws_cloudwatch_log_group" "eks" {
   count             = length(data.aws_cloudwatch_log_group.existing.arn) == 0 ? 1 : 0
   name              = "/aws/eks/${var.cluster_name}/cluster-${random_string.suffix.result}"
@@ -75,5 +73,5 @@ output "kms_key_id" {
 }
 
 output "log_group_name" {
-  value = length(aws_cloudwatch_log_group.eks) > 0 ? aws_cloudwatch_log_group.eks[0].name : "Log group not created"
+  value = length(aws_cloudwatch_log_group.eks) > 0 ? aws_cloudwatch_log_group.eks[0].name : "/aws/eks/${var.cluster_name}/cluster"
 }
