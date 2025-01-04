@@ -75,5 +75,5 @@ output "kms_key_id" {
 }
 
 output "log_group_name" {
-  value = aws_cloudwatch_log_group.eks[0].name
+  value = length(aws_cloudwatch_log_group.eks) > 0 ? aws_cloudwatch_log_group.eks[0].name : "Log group not created"
 }
