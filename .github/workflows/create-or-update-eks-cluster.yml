@@ -47,6 +47,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           TF_LOG: DEBUG  # Enable detailed logging
 
+      - name: Make set_env_vars.sh executable
+        run: chmod +x ./set_env_vars.sh
+
       - name: Set environment variables from Terraform outputs
         run: ./set_env_vars.sh
 
