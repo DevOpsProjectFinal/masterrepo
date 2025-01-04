@@ -55,17 +55,21 @@ resource "aws_cloudwatch_log_group" "eks" {
 }
 
 output "vpc_id" {
-  value = module.vpc.vpc_id
+  description = "The ID of the VPC"
+  value       = module.vpc.vpc_id
 }
 
 output "eks_cluster_name" {
-  value = module.eks.cluster_name
+  description = "The name of the EKS cluster"
+  value       = module.eks.cluster_name
 }
 
 output "kms_key_id" {
-  value = aws_kms_key.eks.id
+  description = "The ID of the KMS key"
+  value       = aws_kms_key.eks.id
 }
 
 output "log_group_name" {
-  value = aws_cloudwatch_log_group.eks.name
+  description = "The name of the CloudWatch log group"
+  value       = aws_cloudwatch_log_group.eks.name
 }
