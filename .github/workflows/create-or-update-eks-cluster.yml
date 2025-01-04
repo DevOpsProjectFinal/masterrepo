@@ -47,6 +47,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           TF_LOG: DEBUG  # Enable detailed logging
 
+      - name: Set environment variables from Terraform outputs
+        run: ./set_env_vars.sh
+
       - name: Set up kubectl for EKS
         run: |
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
