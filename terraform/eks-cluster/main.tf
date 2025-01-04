@@ -57,7 +57,7 @@ data "aws_cloudwatch_log_group" "existing" {
 
 # Conditionally create the log group only if it doesn't already exist
 resource "aws_cloudwatch_log_group" "eks" {
-  count             = length(data.aws_cloudwatch_log_group.existing.arns) == 0 ? 1 : 0
+  count             = length(data.aws_cloudwatch_log_group.existing.arn) == 0 ? 1 : 0
   name              = "/aws/eks/${var.cluster_name}/cluster-${random_string.suffix.result}"
   retention_in_days = 90
 }
