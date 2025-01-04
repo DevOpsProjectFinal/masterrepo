@@ -39,7 +39,7 @@ jobs:
           TF_LOG: DEBUG  # Enable detailed logging
 
       - name: Terraform destroy
-        run: terraform destroy
+        run: terraform destroy -auto-approve
         working-directory: ./terraform/eks-cluster
         env:
           TF_LOG: DEBUG  # Enable detailed logging
