@@ -49,3 +49,15 @@ variable "subnets" {
   description = "The subnets where the EKS cluster will be created"
   type        = list(string)
 }
+
+variable "create_cluster_security_group" {
+  description = "Flag to determine if a new cluster security group should be created"
+  type        = bool
+  default     = true
+}
+
+variable "create_node_security_group" {
+  description = "Flag to determine if a new node security group should be created"
+  type        = bool
+  default     = true
+}
