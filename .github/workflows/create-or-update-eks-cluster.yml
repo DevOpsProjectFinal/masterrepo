@@ -38,6 +38,13 @@ jobs:
         env:
           TF_LOG: DEBUG  # Enable detailed logging
 
+      - name: Terraform destroy
+        run: terraform destroy
+        working-directory: ./terraform/eks-cluster
+        env:
+          TF_LOG: DEBUG  # Enable detailed logging
+      
+
       - name: Terraform Apply
         if: env.CLUSTER_EXISTS == 'NOT_FOUND'
         run: terraform apply -auto-approve
