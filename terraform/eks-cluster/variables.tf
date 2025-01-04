@@ -61,3 +61,15 @@ variable "create_node_security_group" {
   type        = bool
   default     = true
 }
+
+variable "cluster_security_group_id" {
+  description = "The ID of the cluster security group"
+  type        = string
+  default     = null
+}
+
+variable "node_security_group_id" {
+  description = "The ID of the node security group"
+  type        = string
+  default     = null
+}
