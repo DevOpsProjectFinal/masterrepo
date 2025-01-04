@@ -51,11 +51,14 @@ resource "aws_kms_alias" "eks" {
 
 data "aws_cloudwatch_log_group" "existing" {
   name = "/aws/eks/${var.cluster_name}/cluster"
-  ignore_errors = true
+}
+
+locals {
+  log_group_exists = length(data.aws_cloudwatch_log_group.existing.arn) > 0
 }
 
 resource "aws_cloudwatch_log_group" "eks" {
-  count             = length(data.aws_cloudwatch_log_group.existing.arn) == 0 ? 1 : 0
+  count             = local.log_group_exists ? 0 : 1
   name              = "/aws/eks/${var.cluster_name}/cluster-${random_string.suffix.result}"
   retention_in_days = 90
 }
@@ -73,5 +76,5 @@ output "kms_key_id" {
 }
 
 output "log_group_name" {
-  value = length(aws_cloudwatch_log_group.eks) > 0 ? aws_cloudwatch_log_group.eks[0].name : "/aws/eks/${var.cluster_name}/cluster"
+  value = local.log_group_exists ? data.aws_cloudwatch_log_group.existing.name : aws_cloudwatch_log_group.eks[0].name
 }
