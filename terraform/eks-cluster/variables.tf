@@ -83,6 +83,7 @@ variable "principals" {
 variable "account_id" {
   description = "AWS account ID"
   type        = string
+  default     = "796973482644"
 }
 
 variable "key_id" {
