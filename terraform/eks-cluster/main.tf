@@ -7,22 +7,6 @@ resource "random_string" "suffix" {
   special = false
 }
 
-resource "aws_iam_role" "eks_cluster_role" {
-  name = "${var.cluster_name}-role"
-  assume_role_policy = data.aws_iam_policy_document.eks_cluster_assume_role_policy.json
-}
-
-data "aws_iam_policy_document" "eks_cluster_assume_role_policy" {
-  statement {
-    effect = "Allow"
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["eks.amazonaws.com"]
-    }
-  }
-}
-
 resource "aws_security_group" "cluster" {
   count = var.create_cluster_security_group ? 1 : 0
 
