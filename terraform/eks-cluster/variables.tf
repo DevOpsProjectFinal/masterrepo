@@ -79,3 +79,13 @@ variable "principals" {
   type        = list(string)
   default     = []
 }
+
+variable "account_id" {
+  description = "AWS account ID"
+  type        = string
+}
+
+variable "key_id" {
+  description = "KMS key ID"
+  type        = string
+}
