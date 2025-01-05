@@ -7,6 +7,28 @@ resource "random_string" "suffix" {
   special = false
 }
 
+data "aws_iam_policy_document" "this" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+      "kms:DescribeKey"
+    ]
+    resources = [
+      "arn:aws:kms:region:account-id:key/key-id"
+    ]
+    principals {
+      type        = "AWS"
+      identifiers = [
+        for principal in var.principals : principal if principal != null
+      ]
+    }
+  }
+}
+
 resource "aws_security_group" "cluster" {
   count = var.create_cluster_security_group ? 1 : 0
 
