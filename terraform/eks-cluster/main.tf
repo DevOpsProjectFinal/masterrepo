@@ -7,6 +7,22 @@ resource "random_string" "suffix" {
   special = false
 }
 
+resource "aws_iam_role" "eks_cluster_role" {
+  name = "${var.eks_cluster_name}-role"
+  assume_role_policy = data.aws_iam_policy_document.eks_cluster_assume_role_policy.json
+}
+
+data "aws_iam_policy_document" "eks_cluster_assume_role_policy" {
+  statement {
+    effect = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
+  }
+}
+
 data "aws_iam_policy_document" "eks_cluster_policy" {
   statement {
     effect = "Allow"
@@ -17,16 +33,24 @@ data "aws_iam_policy_document" "eks_cluster_policy" {
       "eks:ListNodegroups",
     ]
     resources = ["*"]
-    principals = [
-      for principal in var.principals : principal if principal != null
-    ]
+    principals {
+      type        = "AWS"
+      identifiers = [
+        for principal in var.principals : principal if principal != null
+      ]
+    }
   }
 }
 
 resource "aws_iam_policy" "eks_cluster_policy" {
-  name        = "${var.cluster_name}-iam-policy"
-  description = "IAM policy for EKS cluster ${var.cluster_name}"
+  name        = "${var.eks_cluster_name}-iam-policy"
+  description = "IAM policy for EKS cluster ${var.eks_cluster_name}"
   policy      = data.aws_iam_policy_document.eks_cluster_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "eks_cluster_policy_attachment" {
+  role       = aws_iam_role.eks_cluster_role.name
+  policy_arn = aws_iam_policy.eks_cluster_policy.arn
 }
 
 resource "aws_security_group" "cluster" {
