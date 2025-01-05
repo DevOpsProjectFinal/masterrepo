@@ -157,11 +157,6 @@ output "vpc_id" {
   value       = module.vpc.vpc_id
 }
 
-output "cluster_name" {
-  description = "The name of the EKS cluster"
-  value       = module.eks.cluster_name
-}
-
 output "kms_key_id" {
   description = "The ID of the KMS key"
   value       = aws_kms_key.eks.id
