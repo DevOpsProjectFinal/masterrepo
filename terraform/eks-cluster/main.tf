@@ -38,6 +38,28 @@
     }
   }
 
+  data "aws_iam_policy_document" "this" {
+    statement {
+      effect = "Allow"
+      actions = [
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*",
+        "kms:DescribeKey"
+      ]
+      resources = [
+        "arn:aws:kms:${var.aws_region}:${var.account_id}:key/${var.key_id}"
+      ]
+      principals {
+        type        = "AWS"
+        identifiers = [
+          for principal in var.principals : principal if principal != null
+        ]
+      }
+    }
+  }
+
   resource "aws_kms_key" "eks" {
     description             = "EKS Cluster KMS Key"
     deletion_window_in_days = 10
