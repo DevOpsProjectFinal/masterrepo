@@ -73,3 +73,9 @@ variable "node_security_group_id" {
   type        = string
   default     = null
 }
+
+variable "principals" {
+  description = "List of principals to include in the IAM policy"
+  type        = list(string)
+  default     = []
+}

@@ -7,6 +7,28 @@ resource "random_string" "suffix" {
   special = false
 }
 
+data "aws_iam_policy_document" "eks_cluster_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "eks:DescribeCluster",
+      "eks:ListClusters",
+      "eks:DescribeNodegroup",
+      "eks:ListNodegroups",
+    ]
+    resources = ["*"]
+    principals = [
+      for principal in var.principals : principal if principal != null
+    ]
+  }
+}
+
+resource "aws_iam_policy" "eks_cluster_policy" {
+  name        = "${var.cluster_name}-iam-policy"
+  description = "IAM policy for EKS cluster ${var.cluster_name}"
+  policy      = data.aws_iam_policy_document.eks_cluster_policy.json
+}
+
 resource "aws_security_group" "cluster" {
   count = var.create_cluster_security_group ? 1 : 0
 
