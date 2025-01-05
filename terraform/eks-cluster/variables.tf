@@ -89,5 +89,5 @@ variable "account_id" {
 variable "key_id" {
   description = "KMS key ID"
   type        = string
-  default     = "84e811a0-5dce-413e-aa81-a71baf2fd893"
+  default     = "key-default-1"
 }
