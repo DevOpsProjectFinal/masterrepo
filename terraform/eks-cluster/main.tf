@@ -8,7 +8,7 @@ resource "random_string" "suffix" {
 }
 
 resource "aws_iam_role" "eks_cluster_role" {
-  name = "${var.eks_cluster_name}-role"
+  name = "${var.cluster_name}-role"
   assume_role_policy = data.aws_iam_policy_document.eks_cluster_assume_role_policy.json
 }
 
@@ -43,8 +43,8 @@ data "aws_iam_policy_document" "eks_cluster_policy" {
 }
 
 resource "aws_iam_policy" "eks_cluster_policy" {
-  name        = "${var.eks_cluster_name}-iam-policy"
-  description = "IAM policy for EKS cluster ${var.eks_cluster_name}"
+  name        = "${var.cluster_name}-iam-policy"
+  description = "IAM policy for EKS cluster ${var.cluster_name}"
   policy      = data.aws_iam_policy_document.eks_cluster_policy.json
 }
 
@@ -157,7 +157,7 @@ output "vpc_id" {
   value       = module.vpc.vpc_id
 }
 
-output "eks_cluster_name" {
+output "cluster_name" {
   description = "The name of the EKS cluster"
   value       = module.eks.cluster_name
 }
