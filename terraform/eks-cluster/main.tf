@@ -23,36 +23,6 @@ data "aws_iam_policy_document" "eks_cluster_assume_role_policy" {
   }
 }
 
-data "aws_iam_policy_document" "eks_cluster_policy" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "eks:DescribeCluster",
-      "eks:ListClusters",
-      "eks:DescribeNodegroup",
-      "eks:ListNodegroups",
-    ]
-    resources = ["*"]
-    principals {
-      type        = "AWS"
-      identifiers = [
-        for principal in var.principals : principal if principal != null
-      ]
-    }
-  }
-}
-
-resource "aws_iam_policy" "eks_cluster_policy" {
-  name        = "${var.cluster_name}-iam-policy"
-  description = "IAM policy for EKS cluster ${var.cluster_name}"
-  policy      = data.aws_iam_policy_document.eks_cluster_policy.json
-}
-
-resource "aws_iam_role_policy_attachment" "eks_cluster_policy_attachment" {
-  role       = aws_iam_role.eks_cluster_role.name
-  policy_arn = aws_iam_policy.eks_cluster_policy.arn
-}
-
 resource "aws_security_group" "cluster" {
   count = var.create_cluster_security_group ? 1 : 0
 
