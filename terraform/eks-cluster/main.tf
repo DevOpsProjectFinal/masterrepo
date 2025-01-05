@@ -7,6 +7,58 @@ resource "random_string" "suffix" {
   special = false
 }
 
+resource "aws_security_group" "cluster" {
+  count = var.create_cluster_security_group ? 1 : 0
+
+  name        = "${var.cluster_name}-cluster-sg"
+  description = "EKS Cluster security group"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.cluster_name}-cluster-sg"
+  }
+}
+
+resource "aws_security_group" "node" {
+  count = var.create_node_security_group ? 1 : 0
+
+  name        = "${var.cluster_name}-node-sg"
+  description = "EKS Node security group"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.cluster_name}-node-sg"
+  }
+}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
