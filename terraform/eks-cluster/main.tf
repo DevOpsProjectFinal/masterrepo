@@ -49,7 +49,7 @@
       "kms:DescribeKey"
     ]
     resources = [
-      "arn:aws:kms:${var.aws_region}:${var.account_id}:key/${var.key_id}"
+      "arn:aws:kms:${var.aws_region}:${var.account_id}:key/${var.kms_key_id}"
     ]
     principals {
       type        = "AWS"
