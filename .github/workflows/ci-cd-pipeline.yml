@@ -126,12 +126,12 @@ jobs:
           submodules: 'recursive'
           fetch-depth: 0
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      # Step 3: Debug to verify repository contents
-      - name: Debug Repository Contents
+      
+      # Step 3: Clone the master repository
+      - name: Debug Deployment Directory
         run: |
-          echo "Current Directory: $(pwd)"
-          ls -lR ${{ github.workspace }}
+          echo "Checking deployment/backend directory contents:"
+          ls -lR ${{ github.workspace }}/deployment/backend
 
       # Step 4: Configure kubectl for EKS
       - name: Update kubeconfig for EKS
