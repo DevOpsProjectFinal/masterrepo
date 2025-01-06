@@ -107,52 +107,41 @@ jobs:
           docker push ${ECR_REPO}/frontend-ui:latest
 
   deploy:
-  needs: build-and-push
-  runs-on: ubuntu-latest
-  steps:
-    # Step 1: Set up AWS credentials for EKS
-    - name: Set up AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up kubectl to interact with EKS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    # Step 2: Clone the master repository
-    - name: Checkout Master Repository
-      uses: actions/checkout@v3
-      with:
-        submodules: 'recursive' # Include submodules
-        fetch-depth: 0          # Fetch the full history to ensure submodule updates work
+      - name: Checkout Master Repository
+        uses: actions/checkout@v3
+        with:
+          repository: DevOpsProjectFinal/masterrepo
+          submodules: 'recursive'
+          fetch-depth: 0
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    # Step 3: Debug to verify repository contents
-    - name: Debug Repository Contents
-      run: |
-        echo "Current Directory: $(pwd)"
-        ls -lR ${{ github.workspace }}
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
-    # Step 4: Configure kubectl for EKS
-    - name: Update kubeconfig for EKS
-      run: |
-        aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm version
 
-    # Step 5: Install Helm
-    - name: Install Helm
-      run: |
-        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      - name: Deploy to EKS - Backend API
+        run: |
+          helm upgrade --install backend-api ../../deployment/backend \
+            --set image.repository=${{ env.ECR_REPO }}/backend-api \
+            --set image.tag=latest
 
-    # Step 6: Deploy Backend API to EKS
-    - name: Deploy Backend API
-      run: |
-        helm upgrade --install backend-api ${{ github.workspace }}/deployment/backend \
-          --set image.repository=${{ env.ECR_REPO }}/backend-api \
-          --set image.tag=latest \
-          --debug
-
-    # Step 7: Deploy Frontend UI to EKS
-    - name: Deploy Frontend UI
-      run: |
-        helm upgrade --install frontend-ui ${{ github.workspace }}/deployment/frontend \
-          --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
-          --set image.tag=latest \
-          --debug
+      - name: Deploy to EKS - Frontend UI
+        run: |
+          helm upgrade --install frontend-ui ../../deployment/frontend \
+            --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
+            --set image.tag=latest
