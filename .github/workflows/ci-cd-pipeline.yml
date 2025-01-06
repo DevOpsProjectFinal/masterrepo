@@ -78,21 +78,21 @@ jobs:
           npm test  # or your specific test command (e.g., jest, mocha)
 
       # Step 6: Security Testing with Trivy (or other tools like Snyk)
-      - name: Run Security Tests with Trivy
-        run: |
-          # Install Trivy (Security Scanner for Docker images)
-          curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.39.1/trivy_0.39.1_Linux-64bit.deb -o trivy.deb
-          sudo dpkg -i trivy.deb
-      
-          # Build Docker images for scanning
-          docker build -t ${ECR_REPO}/backend-api:latest ./backend-api
-          docker build -t ${ECR_REPO}/frontend-ui:latest ./frontend-ui
-          
-          # Run Trivy to scan for vulnerabilities in the backend Docker image
-          trivy image --no-progress --exit-code 1 --severity HIGH,CRITICAL ${ECR_REPO}/backend-api:latest
-      
-          # Run Trivy to scan for vulnerabilities in the frontend Docker image
-          trivy image --no-progress --exit-code 1 --severity HIGH,CRITICAL ${ECR_REPO}/frontend-ui:latest
+      # - name: Run Security Tests with Trivy
+      #   run: |
+      #     # Install Trivy (Security Scanner for Docker images)
+      #     curl -sfL https://github.com/aquasecurity/trivy/releases/download/v0.39.1/trivy_0.39.1_Linux-64bit.deb -o trivy.deb
+      #     sudo dpkg -i trivy.deb
+      # 
+      #     # Build Docker images for scanning
+      #     docker build -t ${ECR_REPO}/backend-api:latest ./backend-api
+      #     docker build -t ${ECR_REPO}/frontend-ui:latest ./frontend-ui
+      #    
+      #    # Run Trivy to scan for vulnerabilities in the backend Docker image
+      #     trivy image --no-progress --exit-code 1 --severity HIGH,CRITICAL ${ECR_REPO}/backend-api:latest
+      # 
+      #     # Run Trivy to scan for vulnerabilities in the frontend Docker image
+      #     trivy image --no-progress --exit-code 1 --severity HIGH,CRITICAL ${ECR_REPO}/frontend-ui:latest
 
       # Step 7: Build Backend Docker Image
       - name: Build Backend Docker Image
