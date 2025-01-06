@@ -3,19 +3,19 @@ kind: Deployment
 metadata:
   name: frontend
   labels:
-    app: {{ .Chart.name }}
+    app: {{ .Values.name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Chart.name }}
+      app: {{ .Values.name }}
   template:
     metadata:
       labels:
-        app: {{ .Chart.name }}
+        app: {{ .Values.name }}
     spec:
       containers:
-      - name: {{ .Chart.name }}
+      - name: {{ .Values.name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
