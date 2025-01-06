@@ -5,7 +5,7 @@ metadata:
   labels:
     app: {{ .Chart.Name }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .values.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Chart.Name }}
@@ -16,17 +16,17 @@ spec:
     spec:
       containers:
       - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        image: "{{ .values.image.repository }}:{{ .values.image.tag }}"
+        imagePullPolicy: {{ .values.image.pullPolicy }}
         ports:
         - containerPort: 80
         resources:
           limits:
-            cpu: {{ .Values.resources.limits.cpu }}
-            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .values.resources.limits.cpu }}
+            memory: {{ .values.resources.limits.memory }}
           requests:
-            cpu: {{ .Values.resources.requests.cpu }}
-            memory: {{ .Values.resources.requests.memory }}
-      nodeSelector: {{ toJson .Values.nodeSelector | nindent 8 }}
-      tolerations: {{ toJson .Values.tolerations | nindent 8 }}
-      affinity: {{ toJson .Values.affinity | nindent 8 }}
+            cpu: {{ .values.resources.requests.cpu }}
+            memory: {{ .values.resources.requests.memory }}
+      nodeSelector: {{ toJson .values.nodeSelector | nindent 8 }}
+      tolerations: {{ toJson .values.tolerations | nindent 8 }}
+      affinity: {{ toJson .values.affinity | nindent 8 }}
