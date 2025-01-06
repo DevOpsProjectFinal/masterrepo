@@ -1,32 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ .Chart.name }}
   labels:
-    app: {{ .Chart.Name }}
+    app: {{ .Chart.name }}
 spec:
-  replicas: {{ .values.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Chart.Name }}
+      app: {{ .Chart.name }}
   template:
     metadata:
       labels:
-        app: {{ .Chart.Name }}
+        app: {{ .Chart.name }}
     spec:
       containers:
-      - name: {{ .Chart.Name }}
-        image: "{{ .values.image.repository }}:{{ .values.image.tag }}"
-        imagePullPolicy: {{ .values.image.pullPolicy }}
+      - name: {{ .Chart.name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: 80
         resources:
           limits:
-            cpu: {{ .values.resources.limits.cpu }}
-            memory: {{ .values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
           requests:
-            cpu: {{ .values.resources.requests.cpu }}
-            memory: {{ .values.resources.requests.memory }}
-      nodeSelector: {{ toJson .values.nodeSelector | nindent 8 }}
-      tolerations: {{ toJson .values.tolerations | nindent 8 }}
-      affinity: {{ toJson .values.affinity | nindent 8 }}
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+      nodeSelector: {{ toJson .Values.nodeSelector | nindent 8 }}
+      tolerations: {{ toJson .Values.tolerations | nindent 8 }}
+      affinity: {{ toJson .Values.affinity | nindent 8 }}
