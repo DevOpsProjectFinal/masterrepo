@@ -24,7 +24,57 @@ module "eks" {
     }
   }
 }
+resource "aws_iam_role" "karpenter" {
+  name = "KarpenterController"
 
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "eks.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  max_session_duration = 3600
+  path = "/"
+}
+
+resource "aws_iam_policy" "karpenter_policy" {
+  name = "KarpenterPolicy"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:RunInstances",
+          "ec2:CreateTags",
+          "ec2:Describe*",
+          "ec2:TerminateInstances",
+          "ec2:DeleteTags"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:PassRole"
+        ],
+        Resource = "arn:aws:iam::*:role/*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "karpenter_policy_attachment" {
+  role       = aws_iam_role.karpenter.name
+  policy_arn = aws_iam_policy.karpenter_policy.arn
+}
 data "template_file" "karpenter_trust_policy" {
   template = <<-EOT
   {
@@ -68,11 +118,6 @@ data "template_file" "karpenter_policy" {
     ]
   }
   EOT
-}
-
-resource "aws_iam_role" "karpenter" {
-  name = "KarpenterController"
-  assume_role_policy = data.template_file.karpenter_trust_policy.rendered
 }
 
 resource "aws_iam_policy" "karpenter_controller" {
