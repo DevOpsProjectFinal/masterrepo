@@ -47,3 +47,21 @@ variable "node_security_group_id" {
   type        = string
   default     = "ng-devops-project-eks-cluster"
 }
+
+variable "vpc_id" {
+  description = "The ID of the VPC where the EKS cluster will be deployed"
+  type        = string
+}
+
+# modules/eks/variables.tf
+variable "control_plane_subnet_ids" {
+  description = "List of subnets for the control plane (optional)"
+  type        = list(string)
+  default     = []
+}
+
+variable "subnet_ids" {
+  description = "List of subnets for worker nodes"
+  type        = list(string)
+  default     = []
+}

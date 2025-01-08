@@ -1,6 +1,3 @@
-module "vpc" {
-  source  = "../vpc"
-}
 resource "aws_kms_key" "this" {
   description             = "KMS key for EKS"
   deletion_window_in_days = 10
@@ -18,7 +15,7 @@ locals {
 resource "aws_security_group" "node" {
   count = local.create_node_sg ? 1 : 0
 
-  vpc_id = module.vpc.vpc_id
+  vpc_id = var.vpc_id
 
   ingress {
     from_port   = 0
@@ -40,7 +37,7 @@ resource "aws_security_group" "node" {
 }
 
 resource "aws_security_group" "cluster" {
-  vpc_id = module.vpc.vpc_id
+  vpc_id = var.vpc_id
 
   ingress {
     from_port   = 443
@@ -94,12 +91,15 @@ module "eks" {
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version
-  vpc_id          = module.vpc.vpc_id
+  vpc_id          = var.vpc_id
   version         = "20.31.6"
-  subnet_ids               = module.vpc.private_subnets
-  control_plane_subnet_ids = module.vpc.intra_subnets
+  
   # Provide a valid security group ID or set create_cluster_sg to true
   cluster_security_group_id = var.cluster_security_group_id
+
+  subnet_ids          = var.subnet_ids
+  control_plane_subnet_ids = var.control_plane_subnet_ids
+
 
   # Optional
   cluster_endpoint_public_access = true

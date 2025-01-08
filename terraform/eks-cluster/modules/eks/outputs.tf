@@ -13,11 +13,6 @@ output "cluster_id" {
   value       = module.eks.cluster_id
 }
 
-output "vpc_id" {
-  description = "The VPC id"
-  value = module.vpc.vpc_id
-}
-
 output "cluster_platform_version" {
   description = "Platform version for the cluster"
   value       = module.eks.cluster_platform_version
