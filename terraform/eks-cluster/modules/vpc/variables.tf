@@ -1,5 +1,3 @@
-# variables.tf
-
 variable "aws_region" {
   description = "AWS region to deploy EKS"
   default     = "us-west-2"
@@ -23,25 +21,4 @@ variable "private_subnets" {
 variable "public_subnets" {
   description = "Public subnets CIDR blocks"
   default     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
-}
-
-variable "cluster_name" {
-  description = "EKS cluster to test deployments for multiple services"
-  default     = "devops-project-eks-cluster"
-}
-
-variable "vpc_id" {
-  description = "The VPC ID where the EKS cluster will be created"
-  type        = string
-}
-
-variable "subnets" {
-  description = "The subnets where the EKS cluster will be created"
-  type        = list(string)
-}
-
-variable "account_id" {
-  description = "AWS account ID"
-  type        = string
-  default     = "796973482644"
 }

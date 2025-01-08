@@ -1,0 +1,22 @@
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: default
+spec:
+  # Provisioning for EC2-based scaling
+  requirements:
+    - key: "instance-type"
+      operator: In
+      values: ["t3.medium", "t3.small"] # Specify EC2 instance types
+    - key: "karpenter.sh/capacity-type"
+      operator: In
+      values: ["on-demand", "spot"]
+  provider:
+    subnetSelector:
+      karpenter.sh/discovery: devops-project-eks-cluster
+    securityGroupSelector:
+      karpenter.sh/discovery: devops-project-eks-cluster
+  limits:
+    resources:
+      cpu: "1000" # Total CPU limit for provisioned nodes
+  ttlSecondsAfterEmpty: 30 # Time to terminate nodes after they become idle

@@ -8,10 +8,13 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
+      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Step 2: Set up AWS CLI credentials
       - name: Set up AWS CLI credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -19,28 +22,44 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # Step 3: Verify EKS Cluster
       - name: Verify EKS Cluster
         id: verify-cluster
         run: |
           CLUSTER_STATUS=$(aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --query "cluster.status" --output text || echo "NOT_FOUND")
           echo "CLUSTER_EXISTS=$CLUSTER_STATUS" >> $GITHUB_ENV
+          echo "Cluster Status: $CLUSTER_STATUS"
 
+      # Step 4: Set up Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.8.4
 
+      # Step 5: Terraform Init
       - name: Terraform Init
         run: terraform init
         working-directory: ./terraform/eks-cluster
         env:
           TF_LOG: DEBUG  # Enable detailed logging
 
+      # Step 6: Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan -var-file="terraform.tfvars"
+        working-directory: ./terraform/eks-cluster
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TF_LOG: DEBUG  # Enable detailed logging
+
+      # Step 7: Terraform Apply or Update
       - name: Terraform Apply or Update
         run: |
           if [[ "$CLUSTER_EXISTS" == "NOT_FOUND" ]]; then
+            echo "Cluster does not exist. Creating a new EKS cluster..."
             terraform apply -var-file="terraform.tfvars" -auto-approve
           else
+            echo "Cluster exists. Updating the EKS cluster..."
             terraform apply -refresh-only -var-file="terraform.tfvars" -auto-approve
           fi
         working-directory: ./terraform/eks-cluster
@@ -49,18 +68,48 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           TF_LOG: DEBUG  # Enable detailed logging
 
+      # Step 8: Output and Update Environment Variables
       - name: Make set_env_vars.sh executable
         run: chmod +x ./set_env_vars.sh
 
       - name: Set environment variables from Terraform outputs
         run: ./set_env_vars.sh
 
+      # Step 9: Set up kubectl for EKS
       - name: Set up kubectl for EKS
         run: |
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-      - name: Deploy to EKS - Backend
-        run: kubectl apply -f ../../deployment/backend/templates/deployment.yaml
+      # Step 10: Deploy Karpenter Provisioner
+      - name: Deploy Karpenter Provisioner
+        run: |
+          kubectl apply -f ./kubernetes-manifests/karpenter-provisioner.yaml
 
-      - name: Deploy to EKS - Frontend
-        run: kubectl apply -f ../../deployment/frontend/templates/deployment.yaml
+      # Step 11: Deploy Backend API
+      - name: Checkout Master Repository
+        uses: actions/checkout@v3
+        with:
+          repository: DevOpsProjectFinal/masterrepo
+          submodules: 'recursive'
+          fetch-depth: 0
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Debug Deployment Directory
+        run: |
+          echo "Checking deployment/backend directory contents:"
+          ls -lR ${{ github.workspace }}/deployment/backend
+
+      - name: Deploy Backend API
+        run: |
+          helm upgrade --install backend-api ${{ github.workspace }}/deployment/backend \
+            --set image.repository=${{ env.ECR_REPO }}/backend-api \
+            --set image.tag=latest \
+            --debug
+
+      # Step 12: Deploy Frontend UI
+      - name: Deploy Frontend UI
+        run: |
+          helm upgrade --install frontend-ui ${{ github.workspace }}/deployment/frontend \
+            --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
+            --set image.tag=latest \
+            --debug

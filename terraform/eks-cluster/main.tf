@@ -1,76 +1,70 @@
-  provider "aws" {
-    region = var.aws_region
-  }
+provider "aws" {
+  region = var.region
+}
 
-  data "aws_availability_zones" "available" {
-    # Exclude local zones
-    filter {
-      name   = "opt-in-status"
-      values = ["opt-in-not-required"]
+module "vpc" {
+  source  = "./modules/vpc"
+  name    = var.name
+  cidr    = var.cidr
+  azs     = var.availability_zones
+  public_subnets  = var.private_subnets
+  private_subnets = var.public_subnets
+}
+
+module "eks" {
+  source              = "./modules/eks"
+  cluster_name        = var.cluster_name
+  cluster_version     = "1.31"
+  vpc_id              = module.vpc.vpc_id
+  public_subnets      = module.vpc.public_subnets
+  private_subnets     = module.vpc.private_subnets
+
+  # Disable Managed Node Groups
+  enable_managed_node_groups = false
+
+  # Define Fargate profiles
+  fargate_profiles = {
+    default = {
+      selectors = [
+        {
+          namespace = "default"
+        },
+        {
+          namespace = "kube-system"
+        }
+      ]
     }
   }
+}
 
-  ################################################################################
-  # EKS Module
-  ################################################################################
+resource "aws_iam_role" "karpenter" {
+  name = "KarpenterController"
+  assume_role_policy = file("./karpenter-trust-policy.json")
+}
 
-  module "eks" {
-    source  = "terraform-aws-modules/eks/aws"
-    version = "~> 20.31.6"
+resource "aws_iam_policy" "karpenter_controller" {
+  name   = "KarpenterControllerPolicy"
+  policy = file("./karpenter-policy.json")
+}
 
-    cluster_name    = var.cluster_name
-    cluster_version = "1.31"
+resource "aws_iam_role_policy_attachment" "karpenter_attach" {
+  role       = aws_iam_role.karpenter.name
+  policy_arn = aws_iam_policy.karpenter_controller.arn
+}
 
-    # Optional
-    cluster_endpoint_public_access = true
+resource "helm_release" "karpenter" {
+  name       = "karpenter"
+  namespace  = "karpenter"
+  repository = "https://charts.karpenter.sh"
+  chart      = "karpenter"
+  version    = "v0.30.0"
 
-    # Optional: Adds the current caller identity as an administrator via cluster access entry
-    enable_cluster_creator_admin_permissions = true
-
-    cluster_compute_config = {
-      enabled    = true
-      node_pools = ["general-purpose"]
+  values = [
+    {
+      "serviceAccount.create" = false
+      "serviceAccount.name"   = "karpenter"
+      "clusterName"           = module.eks.cluster_name
+      "clusterEndpoint"       = module.eks.cluster_endpoint
     }
-
-    vpc_id     = module.vpc.vpc_id
-    subnet_ids = module.vpc.private_subnets
-
-    tags = {
-      Environment = "dev"
-      Terraform   = "true"
-    }
-  }
-
-  module "vpc" {
-    source  = "terraform-aws-modules/vpc/aws"
-    version = "~> 5.0"
-
-    name = "eks-vpc"
-    cidr = var.vpc_cidr
-
-    azs             = var.availability_zones
-    private_subnets = [for k, v in var.private_subnets : cidrsubnet(var.vpc_cidr, 4, k)]
-    public_subnets  = [for k, v in var.availability_zones : cidrsubnet(var.vpc_cidr, 8, k + 48)]
-    intra_subnets   = [for k, v in var.availability_zones : cidrsubnet(var.vpc_cidr, 8, k + 52)]
-
-    enable_nat_gateway = true
-    single_nat_gateway = true
-    enable_dns_hostnames = true
-    enable_dns_support   = true
-
-    public_subnet_tags = {
-      "kubernetes.io/role/elb" = 1
-    }
-
-    private_subnet_tags = {
-      "kubernetes.io/role/internal-elb" = 1
-    }
-
-    tags = {
-      Environment = "dev"
-      Terraform   = "true"
-      Cluster = var.cluster_name
-    }
-  }
-
-  
+  ]
+}

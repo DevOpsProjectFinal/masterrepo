@@ -133,15 +133,15 @@ jobs:
           echo "Checking deployment/backend directory contents:"
           ls -lR ${{ github.workspace }}/deployment/backend
 
-      # Step 4: Configure kubectl for EKS
-      - name: Update kubeconfig for EKS
-        run: |
-          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+        # Step 4: Configure kubectl for EKS
+        - name: Update kubeconfig for EKS
+          run: |
+            aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
-      # Step 5: Install Helm
-      - name: Install Helm
-        run: |
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        # Step 5: Install Helm
+        - name: Install Helm
+          run: |
+            curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
       # Step 6: Deploy Backend API to EKS
       - name: Deploy Backend API
