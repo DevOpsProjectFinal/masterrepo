@@ -57,7 +57,7 @@ jobs:
         run: |
           if [[ "$CLUSTER_EXISTS" == "NOT_FOUND" ]]; then
             echo "Cluster does not exist. Creating a new EKS cluster..."
-            terraform apply -var-file="terraform.tfvars" -auto-approve
+            terraform apply -auto-approve
           else
             echo "Cluster exists. Updating the EKS cluster..."
             terraform apply -refresh-only -var-file="terraform.tfvars" -auto-approve
