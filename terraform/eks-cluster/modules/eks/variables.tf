@@ -29,3 +29,21 @@ variable "fargate_profiles" {
     }
   }
 }
+
+variable "cluster_security_group_id" {
+  description = "The ID of the security group to use for the EKS cluster"
+  type        = string
+  default     = "sg-devops-project-eks-cluster"
+}
+
+variable "create_node_sg" {
+  description = "Whether to create a new security group for the nodes"
+  type        = bool
+  default     = true
+}
+
+variable "node_security_group_id" {
+  description = "The ID of the security group to use for the nodes"
+  type        = string
+  default     = "ng-devops-project-eks-cluster"
+}
