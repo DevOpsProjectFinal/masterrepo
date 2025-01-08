@@ -8,6 +8,11 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
+variable "cluster_version" {
+  description = "EKS Cluster version"
+  default     = "1.31"
+}
+
 variable "availability_zones" {
   description = "Availability zones for subnets"
   default     = ["us-west-2a", "us-west-2b", "us-west-2c"]
