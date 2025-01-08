@@ -135,7 +135,7 @@ resource "helm_release" "karpenter" {
   namespace  = "karpenter"
   repository = "https://charts.karpenter.sh"
   chart      = "karpenter"
-  version    = "v0.30.0"
+  version    = "v0.16.3"
 
   values = [
     yamlencode({
