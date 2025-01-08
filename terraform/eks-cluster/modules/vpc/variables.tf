@@ -3,14 +3,14 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
+variable "vpc_name" {
+  description = "VPC name"
+  default     = "vpc-devops-project-eks-cluster"
+}
+
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   default     = "10.0.0.0/16"
-}
-
-variable "cluster_version" {
-  description = "EKS Cluster version"
-  default     = "1.31"
 }
 
 variable "availability_zones" {

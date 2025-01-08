@@ -9,3 +9,15 @@ output "public_subnets" {
 output "private_subnets" {
   value = module.vpc.private_subnets
 }
+
+output "availability_zones" {
+  value = module.vpc.azs
+}
+
+output "azs" {
+  value = module.vpc.azs
+}
+
+output "intra_subnets" {
+  value = module.vpc.intra_subnets
+}

@@ -1,27 +1,15 @@
 provider "aws" {
-  region = var.region
+  region = var.aws_region
 }
 
 module "vpc" {
   source  = "./modules/vpc"
-  name    = var.name
-  cidr    = var.cidr
-  azs     = var.availability_zones
-  public_subnets  = var.private_subnets
-  private_subnets = var.public_subnets
 }
 
 module "eks" {
   source              = "./modules/eks"
   cluster_name        = var.cluster_name
-  cluster_version     = "1.31"
-  vpc_id              = module.vpc.vpc_id
-  public_subnets      = module.vpc.public_subnets
-  private_subnets     = module.vpc.private_subnets
-
-  # Disable Managed Node Groups
-  enable_managed_node_groups = false
-
+  
   # Define Fargate profiles
   fargate_profiles = {
     default = {
@@ -37,14 +25,59 @@ module "eks" {
   }
 }
 
+data "template_file" "karpenter_trust_policy" {
+  template = <<-EOT
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "karpenter.k8s.aws"
+        },
+        "Action": "sts:AssumeRole"
+      }
+    ]
+  }
+  EOT
+}
+
+data "template_file" "karpenter_policy" {
+  template = <<-EOT
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "ec2:RunInstances",
+          "ec2:CreateTags",
+          "ec2:Describe*",
+          "ec2:TerminateInstances",
+          "ec2:DeleteTags"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "iam:PassRole"
+        ],
+        "Resource": "arn:aws:iam::*:role/*"
+      }
+    ]
+  }
+  EOT
+}
+
 resource "aws_iam_role" "karpenter" {
   name = "KarpenterController"
-  assume_role_policy = file("./karpenter-trust-policy.json")
+  assume_role_policy = data.template_file.karpenter_trust_policy.rendered
 }
 
 resource "aws_iam_policy" "karpenter_controller" {
   name   = "KarpenterControllerPolicy"
-  policy = file("./karpenter-policy.json")
+  policy = data.template_file.karpenter_policy.rendered
 }
 
 resource "aws_iam_role_policy_attachment" "karpenter_attach" {
@@ -60,11 +93,11 @@ resource "helm_release" "karpenter" {
   version    = "v0.30.0"
 
   values = [
-    {
+    yamlencode({
       "serviceAccount.create" = false
       "serviceAccount.name"   = "karpenter"
-      "clusterName"           = module.eks.cluster_name
+      "clusterName"           = var.cluster_name
       "clusterEndpoint"       = module.eks.cluster_endpoint
-    }
+    })
   ]
 }

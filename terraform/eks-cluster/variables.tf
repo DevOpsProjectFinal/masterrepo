@@ -5,6 +5,34 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
+variable "cluster_version" {
+  description = "EKS Cluster version"
+  default     = "1.31"
+}
+
+variable "instance_type" {
+  description = "Type of instance to use"
+  type        = string
+  default     = "t2.micro"
+}
+
+variable "control_plane_subnet_ids" {
+  description = "List of subnet IDs for the EKS control plane"
+  type        = list(string)
+  default     = []
+}
+
+variable "subnet_ids" {
+  description = "List of subnet IDs for the EKS cluster"
+  type        = list(string)
+  default     = []
+}
+
+variable "vpc_name" {
+  description = "VPC name"
+  default     = "vpc-devops-project-eks-cluster"
+}
+
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   default     = "10.0.0.0/16"

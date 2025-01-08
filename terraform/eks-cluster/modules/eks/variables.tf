@@ -8,6 +8,12 @@ variable "cluster_name" {
   default     = "devops-project-eks-cluster"
 }
 
+variable "cluster_version" {
+  description = "EKS Cluster version"
+  default     = "1.31"
+}
+
+
 variable "fargate_profiles" {
   description = "Map of Fargate profiles to create"
   default = {
