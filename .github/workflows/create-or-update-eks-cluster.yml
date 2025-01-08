@@ -60,7 +60,7 @@ jobs:
             terraform apply -auto-approve
           else
             echo "Cluster exists. Updating the EKS cluster..."
-            terraform apply -refresh-only -var-file="terraform.tfvars" -auto-approve
+            terraform apply -refresh-only -auto-approve
           fi
         working-directory: ./terraform/eks-cluster
         env:
