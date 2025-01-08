@@ -27,13 +27,3 @@ variable "public_subnets" {
   description = "Public subnets CIDR blocks"
   default     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 }
-
-variable "subnet_ids" {
-  description = "A list of subnet IDs"
-  type        = list(string)
-}
-
-variable "security_group_ids" {
-  description = "A list of security group IDs"
-  type        = list(string)
-}

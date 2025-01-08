@@ -58,16 +58,6 @@ variable "cluster_name" {
   default     = "devops-project-eks-cluster"
 }
 
-variable "vpc_id" {
-  description = "The VPC ID where the EKS cluster will be created"
-  type        = string
-}
-
-variable "subnets" {
-  description = "The subnets where the EKS cluster will be created"
-  type        = list(string)
-}
-
 variable "account_id" {
   description = "AWS account ID"
   type        = string
