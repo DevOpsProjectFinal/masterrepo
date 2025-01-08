@@ -9,7 +9,7 @@ module "vpc" {
 module "eks" {
   source              = "./modules/eks"
   cluster_name        = var.cluster_name
-  
+
   # Define Fargate profiles
   fargate_profiles = {
     default = {
