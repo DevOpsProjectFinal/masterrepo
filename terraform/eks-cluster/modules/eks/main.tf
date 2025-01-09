@@ -100,6 +100,22 @@ module "eks" {
   subnet_ids          = var.subnet_ids
   control_plane_subnet_ids = var.control_plane_subnet_ids
 
+  eks_managed_node_groups = {
+    karpenter = {
+      ami_type       = "BOTTLEROCKET_x86_64"
+      instance_types = ["t3.small"]
+
+      min_size     = 2
+      max_size     = 3
+      desired_size = 2
+
+      labels = {
+        # Used to ensure Karpenter runs on nodes that it does not manage
+        "karpenter.sh/controller" = "true"
+      }
+    }
+  }
+
 
   # Optional
   cluster_endpoint_public_access = true

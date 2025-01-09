@@ -37,3 +37,12 @@ output "cluster_ip_family" {
   description = "The IP family used by the cluster (e.g. `ipv4` or `ipv6`)"
   value       = module.eks.cluster_ip_family
 }
+
+output "cluster_name" {
+  value = module.eks.cluster_name
+}
+
+output "cluster_certificate_authority_data" {
+  description = "Base64 encoded certificate data required to communicate with the cluster"
+  value       = module.eks.cluster_certificate_authority_data
+}

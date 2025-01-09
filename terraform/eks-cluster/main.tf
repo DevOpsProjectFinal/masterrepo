@@ -30,6 +30,34 @@ module "eks" {
     }
   }
 }
+
+data "aws_eks_cluster_auth" "eks" {
+  name = module.eks.cluster_name
+}
+
+output "kubeconfig" {
+  sensitive = true
+  value = <<-EOT
+    apiVersion: v1
+    clusters:
+    - cluster:
+        server: ${module.eks.cluster_endpoint}
+        certificate-authority-data: ${module.eks.cluster_certificate_authority_data}
+      name: ${module.eks.cluster_name}
+    contexts:
+    - context:
+        cluster: ${module.eks.cluster_name}
+        user: ${module.eks.cluster_name}
+      name: ${module.eks.cluster_name}
+    current-context: ${module.eks.cluster_name}
+    kind: Config
+    users:
+    - name: ${module.eks.cluster_name}
+      user:
+        token: ${data.aws_eks_cluster_auth.eks.token}
+  EOT
+}
+
 resource "aws_iam_role" "karpenter" {
   name = "KarpenterController"
 
@@ -39,101 +67,22 @@ resource "aws_iam_role" "karpenter" {
       {
         Effect = "Allow"
         Principal = {
-          Service = "eks.amazonaws.com"
+          Service = "karpenter.k8s.amazonaws.com"
         }
         Action = "sts:AssumeRole"
       }
     ]
   })
-
-  max_session_duration = 3600
-  path = "/"
 }
 
-resource "aws_iam_policy" "karpenter_policy" {
-  name = "KarpenterPolicy"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:RunInstances",
-          "ec2:CreateTags",
-          "ec2:Describe*",
-          "ec2:TerminateInstances",
-          "ec2:DeleteTags"
-        ],
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "iam:PassRole"
-        ],
-        Resource = "arn:aws:iam::*:role/*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "karpenter_policy_attachment" {
+resource "aws_iam_role_policy_attachment" "karpenter_AmazonEKSClusterPolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.karpenter.name
-  policy_arn = aws_iam_policy.karpenter_policy.arn
-}
-data "template_file" "karpenter_trust_policy" {
-  template = <<-EOT
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Principal": {
-          "Service": "karpenter.k8s.aws"
-        },
-        "Action": "sts:AssumeRole"
-      }
-    ]
-  }
-  EOT
 }
 
-data "template_file" "karpenter_policy" {
-  template = <<-EOT
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Action": [
-          "ec2:RunInstances",
-          "ec2:CreateTags",
-          "ec2:Describe*",
-          "ec2:TerminateInstances",
-          "ec2:DeleteTags"
-        ],
-        "Resource": "*"
-      },
-      {
-        "Effect": "Allow",
-        "Action": [
-          "iam:PassRole"
-        ],
-        "Resource": "arn:aws:iam::*:role/*"
-      }
-    ]
-  }
-  EOT
-}
-
-resource "aws_iam_policy" "karpenter_controller" {
-  name   = "KarpenterControllerPolicy"
-  policy = data.template_file.karpenter_policy.rendered
-}
-
-resource "aws_iam_role_policy_attachment" "karpenter_attach" {
+resource "aws_iam_role_policy_attachment" "karpenter_AmazonEKSServicePolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
   role       = aws_iam_role.karpenter.name
-  policy_arn = aws_iam_policy.karpenter_controller.arn
 }
 
 resource "helm_release" "karpenter" {
@@ -145,9 +94,9 @@ resource "helm_release" "karpenter" {
 
   values = [
     yamlencode({
-      "serviceAccount.create" = false
-      "serviceAccount.name"   = "karpenter"
-      "clusterName"           = var.cluster_name
+      "serviceAccount.create" = false,
+      "serviceAccount.name"   = "karpenter",
+      "clusterName"           = var.cluster_name,
       "clusterEndpoint"       = module.eks.cluster_endpoint
     })
   ]

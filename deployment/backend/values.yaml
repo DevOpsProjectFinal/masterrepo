@@ -1,6 +1,6 @@
 replicaCount: 2
 image:
-  repository: 796973482644.dkr.ecr.us-west-2.amazonaws.com/backend-api
+  repository: 796973482644.dkr.ecr.us-east-1.amazonaws.com/backend-api
   tag: latest
 service:
   type: ClusterIP

@@ -35,7 +35,7 @@ jobs:
     needs: update-submodules
     runs-on: ubuntu-latest
     env:
-      ECR_REPO: "796973482644.dkr.ecr.us-west-2.amazonaws.com"
+      ECR_REPO: "796973482644.dkr.ecr.us-east-1.amazonaws.com"
     steps:
       # Step 1: Set up SSH key for submodule access
       - name: SSH

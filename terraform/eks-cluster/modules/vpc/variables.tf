@@ -1,6 +1,6 @@
 variable "aws_region" {
   description = "AWS region to deploy EKS"
-  default     = "us-west-2"
+  default     = "us-east-1"
 }
 
 variable "vpc_name" {
@@ -15,7 +15,7 @@ variable "vpc_cidr" {
 
 variable "availability_zones" {
   description = "Availability zones for subnets"
-  default     = ["us-west-2a", "us-west-2b", "us-west-2c"]
+  default     = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
 
 variable "private_subnets" {
