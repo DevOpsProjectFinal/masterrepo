@@ -107,10 +107,33 @@ jobs:
         run: terraform apply -auto-approve
         working-directory: ./terraform/eks-cluster
 
-      # Step 11: Deploy Karpenter Provisioner
+       # Step 11: Create Fargate Profile
+      - name: Create Fargate Profile
+        run: |
+          aws eks create-fargate-profile \
+            --cluster-name ${{ env.EKS_CLUSTER_NAME }} \
+            --fargate-profile-name karpenter-profile \
+            --pod-execution-role-arn ${{ secrets.FARGATE_ROLE_ARN }} \
+            --selectors namespace=karpenter
+
+      # Step 12: Install Karpenter Helm Chart
+      - name: Install Karpenter
+        run: |
+          helm repo add karpenter https://charts.karpenter.sh
+          helm repo update
+          helm upgrade --install karpenter karpenter/karpenter \
+            --namespace karpenter --create-namespace \
+            --set controller.clusterName=${{ env.EKS_CLUSTER_NAME }} \
+            --set controller.clusterEndpoint=${{ env.EKS_CLUSTER_ENDPOINT }} \
+            --set controller.serviceAccount.create=false \
+            --set controller.serviceAccount.name=karpenter \
+            --set aws.defaultInstanceProfile=${{ env.INSTANCE_PROFILE_NAME }} \
+            --wait
+
+      # Step 13: Deploy Karpenter Provisioner for Fargate
       - name: Deploy Karpenter Provisioner
         run: |
-          kubectl apply -f ./kubernetes-manifests/karpenter-provisioner.yaml
+          kubectl apply -f ./kubernetes-manifests/karpenter-fargate-provisioner.yaml
 
       # Step 12: Deploy Backend API
       - name: Deploy Backend API
