@@ -379,3 +379,7 @@ variable "rule_name_prefix" {
   type        = string
   default     = "Karpenter"
 }
+
+variable "instance_profile_name" {
+  default = "KarpenterInstanceProfile"
+}
