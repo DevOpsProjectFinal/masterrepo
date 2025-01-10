@@ -67,11 +67,11 @@ jobs:
   id: outputs
   run: |
     set -e
-    echo "EKS_CLUSTER_NAME=$(terraform output -raw cluster_name)"
-    echo "REGION=$(terraform output -raw region)"
-    echo "EKS_CLUSTER_ENDPOINT=$(terraform output -raw cluster_endpoint)"
-    echo "EKS_CLUSTER_CA_DATA=$(terraform output -raw cluster_certificate_authority_data)"
-    echo "INSTANCE_PROFILE_NAME=$(terraform output -raw KarpenterInstanceProfile)"
+    echo "EKS_CLUSTER_NAME=$(terraform output cluster_name)"
+    echo "REGION=$(terraform output region)"
+    echo "EKS_CLUSTER_ENDPOINT=$(terraform output cluster_endpoint)"
+    echo "EKS_CLUSTER_CA_DATA=$(terraform output cluster_certificate_authority_data)"
+    echo "INSTANCE_PROFILE_NAME=$(terraform output KarpenterInstanceProfile)"
   working-directory: ./terraform/eks-cluster
 
       # Step 9: Generate kubeconfig
