@@ -14,7 +14,7 @@ output "cluster_name" {
 
 output "cluster_certificate_authority_data" {
   description = "Base64 encoded certificate data required to communicate with the cluster"
-  value = <<EOT
+  value = base64encode(<<EOT
 -----BEGIN CERTIFICATE-----
 MIIDBTCCAe2gAwIBAgIIJKwPiqKOlA0wDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
 AxMKa3ViZXJuZXRlczAeFw0yNTAxMTAxOTE0NDhaFw0zNTAxMDgxOTE5NDhaMBUx
@@ -35,6 +35,7 @@ serArClEQRj6jEr1qT+Ymdmn37rsWrZ3kULT/U3n7efcd3Db0/iai1oXeikLXo9L
 0SO4GDjFQrmT
 -----END CERTIFICATE-----
 EOT
+  )
 }
 
 output "region" {
