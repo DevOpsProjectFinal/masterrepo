@@ -32,8 +32,7 @@ jobs:
       
       - name: Clean Terraform directory
         run: |
-          rm -rf .terraform .terraform.lock.hcl
-          rm terraform.tfstate
+          rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
 
       # Step 4: Set up Terraform
       - name: Set up Terraform
