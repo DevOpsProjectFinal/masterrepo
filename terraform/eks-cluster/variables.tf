@@ -380,6 +380,8 @@ variable "rule_name_prefix" {
   default     = "Karpenter"
 }
 
-variable "instance_profile_name" {
-  default = "KarpenterInstanceProfile"
+variable "KarpenterInstanceProfile" {
+  description = "The instance profile for Karpenter"
+  type        = string
+  default     = "KarpenterInstanceProfile"
 }

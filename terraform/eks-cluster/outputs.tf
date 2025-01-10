@@ -48,5 +48,22 @@ output "cluster_ip_family" {
 }
 
 output "cluster_name" {
+  description = "EKS cluster to test deployments for multiple services"
   value = module.eks.cluster_name
+}
+
+output "cluster_certificate_authority_data" {
+  description = "Base64 encoded certificate data required to communicate with the cluster"
+  value       = module.eks.cluster_certificate_authority_data
+}
+
+
+output "region" {
+  description = "AWS region to deploy EKS"
+  value = module.eks.cluster_name
+}
+
+output "KarpenterInstanceProfile" {
+  description = "The instance profile for Karpenter"
+  value       = var.KarpenterInstanceProfile
 }

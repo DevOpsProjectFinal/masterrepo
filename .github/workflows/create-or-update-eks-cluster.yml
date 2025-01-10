@@ -33,6 +33,7 @@ jobs:
       - name: Clean Terraform directory
         run: |
           rm -rf .terraform .terraform.lock.hcl
+          rm terraform.tfstate
 
       # Step 4: Set up Terraform
       - name: Set up Terraform
@@ -66,10 +67,11 @@ jobs:
       - name: Extract Terraform Outputs
         id: outputs
         run: |
-          echo "EKS_CLUSTER_NAME=$(terraform output -raw eks_cluster_name)" >> $GITHUB_ENV
+          echo "EKS_CLUSTER_NAME=$(terraform output -raw cluster_name)" >> $GITHUB_ENV
           echo "REGION=$(terraform output -raw region)" >> $GITHUB_ENV
           echo "EKS_CLUSTER_ENDPOINT=$(terraform output -raw cluster_endpoint)" >> $GITHUB_ENV
-          echo "EKS_CLUSTER_CA_DATA=$(terraform output -raw eks_cluster_certificate_authority_data)" >> $GITHUB_ENV
+          echo "EKS_CLUSTER_CA_DATA=$(terraform output -raw cluster_certificate_authority_data)" >> $GITHUB_ENV
+          echo "INSTANCE_PROFILE_NAME=$(terraform output -raw KarpenterInstanceProfile)" >> $GITHUB_ENV
         working-directory: ./terraform/eks-cluster
 
       # Step 9: Generate kubeconfig
@@ -123,6 +125,7 @@ jobs:
             --set controller.serviceAccount.create=false \
             --set controller.serviceAccount.name=karpenter \
             --set aws.defaultInstanceProfile=${{ env.INSTANCE_PROFILE_NAME }} \
+            --set controller.provisioner.default.fargateEnabled=true \
             --wait
 
       # Step 13: Deploy Karpenter Provisioner for Fargate
