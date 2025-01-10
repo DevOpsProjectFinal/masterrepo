@@ -75,11 +75,7 @@ jobs:
         id: outputs
         run: |
           echo "EKS_CLUSTER_NAME=$(terraform output -raw cluster_name)" >> $GITHUB_ENV || exit 1
-          echo "REGION=$(terraform output -raw region)" >> $GITHUB_ENV || exit 1
-          echo "EKS_CLUSTER_ENDPOINT=$(terraform output -raw cluster_endpoint)" >> $GITHUB_ENV || exit 1
-          echo "EKS_CLUSTER_CA_DATA=$(terraform output -raw cluster_certificate_authority_data)" >> $GITHUB_ENV || exit 1
-          echo "INSTANCE_PROFILE_NAME=$(terraform output -raw KarpenterInstanceProfile)" >> $GITHUB_ENV || exit 1
-        shell: bash
+          shell: bash
         env:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
