@@ -15,4 +15,18 @@ module "eks" {
   # Pass subnets from the VPC module
   subnet_ids               = module.vpc.private_subnets
   control_plane_subnet_ids = module.vpc.intra_subnets
+
+  # Define Fargate profiles
+  fargate_profiles = {
+    default = {
+      selectors = [
+        {
+          namespace = "default"
+        },
+        {
+          namespace = "kube-system"
+        }
+      ]
+    }
+  }
 }

@@ -111,16 +111,7 @@ jobs:
         run: terraform apply -auto-approve
         working-directory: ./terraform/eks-cluster
 
-       # Step 11: Create Fargate Profile
-      - name: Create Fargate Profile
-        run: |
-          aws eks create-fargate-profile \
-            --cluster-name ${{ env.EKS_CLUSTER_NAME }} \
-            --fargate-profile-name karpenter-profile \
-            --pod-execution-role-arn ${{ secrets.FARGATE_ROLE_ARN }} \
-            --selectors namespace=karpenter
-
-      # Step 12: Install Karpenter Helm Chart
+       # Step 11: Install Karpenter Helm Chart
       - name: Install Karpenter
         run: |
           helm repo add karpenter https://charts.karpenter.sh
