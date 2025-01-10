@@ -16,12 +16,3 @@ module "eks" {
   subnet_ids               = module.vpc.private_subnets
   control_plane_subnet_ids = module.vpc.intra_subnets
 }
-
-module "karpenter" {
-  source                = "./modules/karpenter"
-  cluster_name      = module.eks.cluster_name
-  cluster_endpoint  = module.eks.cluster_endpoint
-  eks_certificate_data  = module.eks.cluster_certificate_authority_data
-  instance_profile_name = var.instance_profile_name
-  subnet_ids               = module.vpc.private_subnets
-}

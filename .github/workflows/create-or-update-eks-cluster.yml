@@ -29,6 +29,10 @@ jobs:
           CLUSTER_STATUS=$(aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --query "cluster.status" --output text || echo "NOT_FOUND")
           echo "CLUSTER_EXISTS=$CLUSTER_STATUS" >> $GITHUB_ENV
           echo "Cluster Status: $CLUSTER_STATUS"
+      
+      - name: Clean Terraform directory
+        run: |
+          rm -rf .terraform .terraform.lock.hcl
 
       # Step 4: Set up Terraform
       - name: Set up Terraform
