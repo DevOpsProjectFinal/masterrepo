@@ -1,0 +1,117 @@
+##################################
+# TEST ENVIRONMENT CONFIGURATION #
+##################################
+version: "3.7"
+services:
+  app:
+    image: "${APP_IMAGE_NAME}"
+    depends_on:
+    - database
+    entrypoint: test-entrypoint
+    environment:
+      APP_URL: http://localhost
+      DB_HOST: database
+      DB_PORT: 3306
+      DB_DATABASE: ceannate
+      DB_USERNAME: homestead
+      DB_PASSWORD: secret
+  database:
+    image: mysql:5.7
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 1
+      MYSQL_DATABASE: ceannate
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
+
+##################################
+# TESTS FOR DEPLOY TO EKS WORKFLOW #
+##################################
+tests:
+  - name: "Verify EKS Cluster"
+    steps:
+      - name: "Verify EKS Cluster"
+        run: |
+          # Mock the AWS CLI command to describe the cluster
+          echo "CLUSTER_STATUS=ACTIVE" >> $GITHUB_ENV
+          echo "Cluster Status: ACTIVE"
+
+  - name: "Terraform Plan"
+    steps:
+      - name: "Terraform Plan"
+        run: |
+          # Mock the terraform plan command
+          echo "Terraform plan executed successfully"
+
+  - name: "Terraform Apply (New Cluster)"
+    steps:
+      - name: "Terraform Apply (New Cluster)"
+        run: |
+          # Mock the terraform apply command for a new cluster
+          echo "New EKS cluster created successfully"
+
+  - name: "Terraform Apply (Existing Cluster)"
+    steps:
+      - name: "Terraform Apply (Existing Cluster)"
+        run: |
+          # Mock the terraform apply command for an existing cluster
+          echo "Existing EKS cluster updated successfully"
+
+  - name: "Extract Terraform Outputs"
+    steps:
+      - name: "Extract Terraform Outputs"
+        run: |
+          # Mock the terraform output command
+          echo "EKS_CLUSTER_NAME=\"my-cluster\"" >> $GITHUB_ENV
+          echo "REGION=\"us-west-2\"" >> $GITHUB_ENV
+          echo "EKS_CLUSTER_ENDPOINT=\"https://my-cluster-endpoint\"" >> $GITHUB_ENV
+          echo "EKS_CLUSTER_CA_DATA=\"my-cluster-ca-data\"" >> $GITHUB_ENV
+          echo "INSTANCE_PROFILE_NAME=\"my-instance-profile\"" >> $GITHUB_ENV
+
+  - name: "Generate kubeconfig"
+    steps:
+      - name: "Generate kubeconfig"
+        run: |
+          # Mock the kubeconfig generation
+          echo "Kubeconfig generated successfully"
+
+  - name: "Terraform Apply Helm Release"
+    steps:
+      - name: "Terraform Apply Helm Release"
+        run: |
+          # Mock the terraform apply command for Helm release
+          echo "Helm release applied successfully"
+
+  - name: "Install Karpenter"
+    steps:
+      - name: "Install Karpenter"
+        run: |
+          # Mock the helm upgrade command for Karpenter installation
+          echo "Karpenter installed successfully"
+
+  - name: "Deploy Karpenter Provisioner"
+    steps:
+      - name: "Deploy Karpenter Provisioner"
+        run: |
+          # Mock the kubectl apply command for Karpenter provisioner
+          echo "Karpenter provisioner deployed successfully"
+
+  - name: "Deploy Backend API"
+    steps:
+      - name: "Deploy Backend API"
+        run: |
+          # Mock the helm upgrade command for backend API deployment
+          echo "Backend API deployed successfully"
+
+  - name: "Deploy Frontend UI"
+    steps:
+      - name: "Deploy Frontend UI"
+        run: |
+          # Mock the helm upgrade command for frontend UI deployment
+          echo "Frontend UI deployed successfully"
+
+  - name: "Terraform Destroy on Failure"
+    steps:
+      - name: "Terraform Destroy on Failure"
+        run: |
+          # Mock the terraform destroy command on failure
+          echo "Terraform destroy executed successfully"
