@@ -6,7 +6,7 @@ module "vpc" {
   source  = "./modules/vpc"
 }
 
-resource "aws_iam_role" "karpenter_role" {
+resource "aws_iam_role" "eks_fargate_pod_execution_role" {
   name = "KarpenterRole"
 
   assume_role_policy = jsonencode({
@@ -53,13 +53,13 @@ resource "aws_iam_policy" "karpenter_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "karpenter_policy_attachment" {
-  role       = aws_iam_role.karpenter_role.name
+  role       = aws_iam_role.eks_fargate_pod_execution_role.name
   policy_arn = aws_iam_policy.karpenter_policy.arn
 }
 
 resource "aws_iam_instance_profile" "karpenter_instance_profile" {
   name = "KarpenterInstanceProfile"
-  role = aws_iam_role.karpenter_role.name
+  role = aws_iam_role.eks_fargate_pod_execution_role.name
 }
 
 module "eks" {
@@ -71,23 +71,24 @@ module "eks" {
   # Pass subnets from the VPC module
   subnet_ids               = module.vpc.private_subnets
   control_plane_subnet_ids = module.vpc.intra_subnets
+}
+
+
+resource "aws_eks_fargate_profile" "default" {
+  cluster_name         = var.cluster_name
   fargate_profile_name = "default"
   pod_execution_role_arn = aws_iam_role.eks_fargate_pod_execution_role.arn
+  subnet_ids               = module.vpc.private_subnets
 
-  # Define Fargate profiles
-  fargate_profiles = {
-    default = {
-      selectors = [
-        {
-          namespace = "default"
-        },
-        {
-          namespace = "kube-system"
-        },
-        {
-          namespace = "karpenter"
-        }
-      ]
-    }
+  selector {
+    namespace = "default"
+  }
+
+  selector {
+    namespace = "kube-system"
+  }
+
+  selector {
+    namespace = "karpenter"
   }
 }
