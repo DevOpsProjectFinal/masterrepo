@@ -72,7 +72,6 @@ jobs:
 
       # Step 8: Extract Terraform Outputs
       - name: Extract Terraform Outputs
-        id: outputs
         run: |
           echo "EKS_CLUSTER_NAME=$(terraform output -raw cluster_name)" >> $GITHUB_ENV || exit 1
           shell: bash
