@@ -2,6 +2,10 @@ provider "aws" {
   region = var.aws_region
 }
 
+resource "random_id" "fargate_profile_id" {
+  byte_length = 8
+}
+
 module "vpc" {
   source  = "./modules/vpc"
 }
@@ -15,7 +19,7 @@ resource "aws_iam_role" "eks_fargate_pod_execution_role" {
       {
         Effect = "Allow",
         Principal = {
-          Service = "ec2.amazonaws.com"
+          Service = "eks-fargate-pods.amazonaws.com"
         },
         Action = "sts:AssumeRole"
       }
@@ -73,15 +77,12 @@ module "eks" {
   control_plane_subnet_ids = module.vpc.intra_subnets
 }
 
-
 resource "aws_eks_fargate_profile" "default" {
   cluster_name         = module.eks.cluster_name
-  fargate_profile_name = "default"
+  fargate_profile_name = "fargate-profile-${random_id.fargate_profile_id.hex}"
   pod_execution_role_arn = aws_iam_role.eks_fargate_pod_execution_role.arn
   subnet_ids               = module.vpc.private_subnets
-  control_plane_subnet_ids = module.vpc.intra_subnets
-  vpc_id = module.vpc.vpc_id
-
+  
   selector {
     namespace = "default"
   }
@@ -94,5 +95,5 @@ resource "aws_eks_fargate_profile" "default" {
     namespace = "karpenter"
   }
 
-  depends_on = [aws_eks_cluster.eks_cluster]
+  depends_on = [module.eks]
 }
