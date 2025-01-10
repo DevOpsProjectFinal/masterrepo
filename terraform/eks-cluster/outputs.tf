@@ -64,6 +64,5 @@ output "region" {
 }
 
 output "KarpenterInstanceProfile" {
-  description = "The instance profile for Karpenter"
-  value       = var.KarpenterInstanceProfile
+  value = aws_iam_instance_profile.karpenter_instance_profile.name
 }
