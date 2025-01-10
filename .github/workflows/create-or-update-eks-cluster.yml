@@ -76,45 +76,16 @@ jobs:
           TERRAFORM_CLI_PATH: ./terraform/eks-cluster
 
       # Step 9: Generate kubeconfig
-      - name: Generate kubeconfig
+      - name: Set up kubeconfig
         run: |
-          cat <<EOF > $GITHUB_WORKSPACE/kubeconfig
-          apiVersion: v1
-          clusters:
-          - cluster:
-              server: ${{ env.EKS_CLUSTER_ENDPOINT }}
-              certificate-authority-data: ${{ env.EKS_CLUSTER_CA_DATA }}
-            name: ${{ env.EKS_CLUSTER_NAME }}
-          contexts:
-          - context:
-              cluster: ${{ env.EKS_CLUSTER_NAME }}
-              user: aws
-            name: ${{ env.EKS_CLUSTER_NAME }}
-          current-context: ${{ env.EKS_CLUSTER_NAME }}
-          kind: Config
-          preferences: {}
-          users:
-          - name: aws
-            user:
-              exec:
-                apiVersion: client.authentication.k8s.io/v1alpha1
-                command: aws
-                args:
-                  - eks
-                  - get-token
-                  - --region
-                  - ${{ env.REGION }}
-                  - --cluster-name
-                  - ${{ env.EKS_CLUSTER_NAME }}
-                env: null
-          EOF
+          aws eks --region ${{ secrets.AWS_DEFAULT_REGION }} update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}
 
       # Step 10: Apply Helm Release
       - name: Terraform Apply Helm Release
         run: terraform apply -auto-approve
         working-directory: ./terraform/eks-cluster
 
-       # Step 11: Install Karpenter Helm Chart
+      # Step 11: Install Karpenter Helm Chart
       - name: Install Karpenter
         run: |
           helm repo add karpenter https://charts.karpenter.sh
