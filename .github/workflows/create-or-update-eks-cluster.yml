@@ -78,7 +78,11 @@ jobs:
       # Step 9: Generate kubeconfig
       - name: Set up kubeconfig
         run: |
-          aws eks --region ${{ secrets.AWS_DEFAULT_REGION }} update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}
+          kubectl config use-context ${{ env.EKS_CLUSTER_NAME }}
+        working-directory: ./terraform/eks-cluster
+        env:
+          TERRAFORM_CLI_PATH: ./terraform/eks-cluster
 
       # Step 10: Apply Helm Release
       - name: Terraform Apply Helm Release
@@ -118,9 +122,3 @@ jobs:
           helm upgrade --install frontend-ui ./deployment/frontend \
             --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
             --set image.tag=latest
-            
-      # Cleanup on Failure
-      - name: Terraform Destroy on Failure
-        if: ${{ failure() || cancelled() }}
-        run: terraform destroy -auto-approve
-        working-directory: ./terraform/eks-cluster
