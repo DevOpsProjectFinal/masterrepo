@@ -1,11 +1,13 @@
 name: Deploy to EKS
 
 on:
-  workflow_dispatch
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
-    runs-on: ubuntu-22.04 --username=swapnakm15 --password=Paapu@13
+    runs-on: ubuntu-latest
 
     steps:
       # Step 1: Checkout Code
