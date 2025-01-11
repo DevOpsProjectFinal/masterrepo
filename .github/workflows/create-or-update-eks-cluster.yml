@@ -76,10 +76,10 @@ jobs:
       #    TERRAFORM_CLI_PATH: ./terraform/eks-cluster
 
       - name: Download kubeconfig to local
-      run: |
-        mkdir -p .kube
-        aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --kubeconfig .kube/config
-        echo "Kubeconfig saved to $(pwd)/.kube/config"
+        run: |
+          mkdir -p .kube
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --kubeconfig .kube/config
+          echo "Kubeconfig saved to $(pwd)/.kube/config"
 
       - name: Helm Install Sample App
         run: |
