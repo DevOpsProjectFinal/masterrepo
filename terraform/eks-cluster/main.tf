@@ -64,6 +64,10 @@ resource "aws_iam_role_policy_attachment" "karpenter_policy_attachment" {
 resource "aws_iam_instance_profile" "karpenter_instance_profile" {
   name = "KarpenterInstanceProfile"
   role = aws_iam_role.eks_fargate_pod_execution_role.name
+
+  lifecycle {
+    ignore_changes = [name]
+  }
 }
 
 module "eks" {

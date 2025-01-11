@@ -1,13 +1,11 @@
 name: Deploy to EKS
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04 --username=swapnakm15 --password=Paapu@13
 
     steps:
       # Step 1: Checkout Code
@@ -30,27 +28,28 @@ jobs:
           echo "CLUSTER_EXISTS=$CLUSTER_STATUS" >> $GITHUB_ENV
           echo "Cluster Status: $CLUSTER_STATUS"
       
+      # Step 4: Clean Terraform directory
       - name: Clean Terraform directory
         run: |
           rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
 
-      # Step 4: Set up Terraform
+      # Step 5: Set up Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.8.4
 
-      # Step 5: Terraform Init
+      # Step 6: Terraform Init
       - name: Terraform Init
         run: terraform init -upgrade
         working-directory: ./terraform/eks-cluster
 
-      # Step 6: Terraform Plan
+      # Step 7: Terraform Plan
       - name: Terraform Plan
         run: terraform plan
         working-directory: ./terraform/eks-cluster
 
-      # Step 7: Terraform Apply
+      # Step 8: Terraform Apply
       - name: Terraform Apply
         run: |
           if [[ "$CLUSTER_EXISTS" == "NOT_FOUND" ]]; then
@@ -62,7 +61,7 @@ jobs:
           fi
         working-directory: ./terraform/eks-cluster
 
-      # Step 8: Extract Terraform Outputs
+      # Step 9: Extract Terraform Outputs
       - name: Extract Terraform Outputs
         id: outputs
         run: |
@@ -75,7 +74,7 @@ jobs:
         env:
           TERRAFORM_CLI_PATH: ./terraform/eks-cluster
 
-      # Step 9: Generate kubeconfig
+      # Step 10: Generate kubeconfig
       - name: Set up kubeconfig
         run: |
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
@@ -84,12 +83,12 @@ jobs:
         env:
           TERRAFORM_CLI_PATH: ./terraform/eks-cluster
 
-      # Step 10: Apply Helm Release
+      # Step 11: Apply Helm Release
       - name: Terraform Apply Helm Release
         run: terraform apply -auto-approve
         working-directory: ./terraform/eks-cluster
 
-      # Step 11: Install Karpenter Helm Chart
+      # Step 12: Install Karpenter Helm Chart
       - name: Install Karpenter
         run: |
           helm repo add karpenter https://charts.karpenter.sh
@@ -109,21 +108,21 @@ jobs:
         run: |
           kubectl apply -f ./kubernetes-manifests/karpenter-fargate-provisioner.yaml
 
-      # Step 12: Deploy Backend API
+      # Step 14: Deploy Backend API
       - name: Deploy Backend API
         run: |
           helm upgrade --install backend-api ./deployment/backend \
             --set image.repository=${{ env.ECR_REPO }}/backend-api \
             --set image.tag=latest
 
-      # Step 13: Deploy Frontend UI
+      # Step 15: Deploy Frontend UI
       - name: Deploy Frontend UI
         run: |
           helm upgrade --install frontend-ui ./deployment/frontend \
             --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
             --set image.tag=latest
             
-      # Cleanup on Failure
+      # Step 16: Cleanup on Failure
       - name: Terraform Destroy on Failure
         if: ${{ failure() || cancelled() }}
         run: terraform destroy -auto-approve
