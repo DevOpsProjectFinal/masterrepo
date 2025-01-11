@@ -88,6 +88,8 @@ data "aws_iam_policy_document" "this" {
 }
 
 module "eks" {
+  count = var.create_eks ? 1 : 0
+
   source          = "terraform-aws-modules/eks/aws"
   cluster_name    = var.cluster_name
   cluster_version = var.cluster_version

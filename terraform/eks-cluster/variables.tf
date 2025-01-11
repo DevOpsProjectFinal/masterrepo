@@ -386,8 +386,8 @@ variable "KarpenterInstanceProfile" {
   default     = "KarpenterInstanceProfile"
 }
 
-variable "create_nat_eips" {
-  description = "Check wether to create EIPs or not"
+variable "create_new_resources" {
+  description = "Check wether to create new resources or not"
   type        = bool
   default     = false
 }

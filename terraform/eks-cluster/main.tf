@@ -10,7 +10,13 @@ module "vpc" {
   source  = "./modules/vpc"
 }
 
+data "aws_iam_role" "existing_karpenter_role" {
+  name = "KarpenterRole"
+}
+
 resource "aws_iam_role" "eks_fargate_pod_execution_role" {
+  count = length(data.aws_iam_role.existing_karpenter_role.arn) == 0 ? 1 : 0
+
   name = "KarpenterRole"
 
   assume_role_policy = jsonencode({
@@ -65,13 +71,21 @@ resource "aws_iam_policy" "karpenter_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "karpenter_policy_attachment" {
-  role       = aws_iam_role.eks_fargate_pod_execution_role.name
-  policy_arn = aws_iam_policy.karpenter_policy.arn
+  count = length(data.aws_iam_role.existing_karpenter_role.arn) == 0 ? 1 : 0
+
+  role       = aws_iam_role.eks_fargate_pod_execution_role[0].name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
 }
 
 resource "aws_iam_instance_profile" "karpenter_instance_profile" {
+  count = length(data.aws_iam_role.existing_karpenter_role.arn) == 0 ? 1 : 0
+
   name = "KarpenterInstanceProfile"
-  role = aws_iam_role.eks_fargate_pod_execution_role.name
+  role = aws_iam_role.eks_fargate_pod_execution_role[0].name
+}
+
+output "karpenter_role_name" {
+  value = length(data.aws_iam_role.existing_karpenter_role.arn) == 0 ? aws_iam_role.eks_fargate_pod_execution_role[0].name : data.aws_iam_role.existing_karpenter_role.name
 }
 
 # Declare KMS Key
@@ -114,7 +128,7 @@ resource "aws_cloudwatch_log_group" "this" {
 }
 
 resource "aws_eip" "nat" {
-  count = var.create_nat_eips ? 1 : 0
+  count = var.create_new_resources ? 1 : 0
 
   domain = "vpc"
 }
@@ -128,13 +142,15 @@ module "eks" {
   # Pass subnets from the VPC module
   subnet_ids               = module.vpc.private_subnets
   control_plane_subnet_ids = module.vpc.intra_subnets
+
+  create_eks = var.create_new_resources
 }
 
 resource "aws_eks_fargate_profile" "default" {
   cluster_name         = module.eks.cluster_name
   fargate_profile_name = "fargate-profile-${random_id.fargate_profile_id.hex}"
-  pod_execution_role_arn = aws_iam_role.eks_fargate_pod_execution_role.arn
-  subnet_ids               = module.vpc.private_subnets
+  pod_execution_role_arn = length(data.aws_iam_role.existing_karpenter_role.arn) == 0 ? aws_iam_role.eks_fargate_pod_execution_role[0].arn : data.aws_iam_role.existing_karpenter_role.arn
+  subnet_ids           = module.vpc.private_subnets
   
   selector {
     namespace = "default"

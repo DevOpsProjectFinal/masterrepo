@@ -65,3 +65,9 @@ variable "subnet_ids" {
   type        = list(string)
   default     = []
 }
+
+variable "create_eks" {
+  description = "Ignore creating EKS"
+  type        = bool
+  default     = false
+}
