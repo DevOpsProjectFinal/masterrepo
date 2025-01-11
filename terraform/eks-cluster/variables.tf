@@ -385,3 +385,9 @@ variable "KarpenterInstanceProfile" {
   type        = string
   default     = "KarpenterInstanceProfile"
 }
+
+variable "create_nat_eips" {
+  description = "Check wether to create EIPs or not"
+  type        = bool
+  default     = false
+}
