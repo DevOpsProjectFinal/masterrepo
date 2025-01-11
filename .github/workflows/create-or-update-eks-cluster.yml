@@ -125,5 +125,5 @@ jobs:
       # Step 16: Cleanup on Failure
       - name: Terraform Destroy on Failure
         if: ${{ failure() || cancelled() }}
-        run: terraform destroy -auto-approve
-        working-directory: ./terraform/eks-cluster
+          run: terraform destroy -auto-approve
+          working-directory: ./terraform/eks-cluster
