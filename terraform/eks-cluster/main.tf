@@ -25,6 +25,10 @@ resource "aws_iam_role" "eks_fargate_pod_execution_role" {
       }
     ]
   })
+
+  lifecycle {
+    ignore_changes = [name]  # Ignore changes to the "name" attribute
+  }
 }
 
 resource "aws_iam_policy" "karpenter_policy" {
@@ -54,6 +58,10 @@ resource "aws_iam_policy" "karpenter_policy" {
       }
     ]
   })
+
+  lifecycle {
+    ignore_changes = [name]  # Ignore changes to the "name" attribute
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "karpenter_policy_attachment" {
@@ -64,6 +72,29 @@ resource "aws_iam_role_policy_attachment" "karpenter_policy_attachment" {
 resource "aws_iam_instance_profile" "karpenter_instance_profile" {
   name = "KarpenterInstanceProfile"
   role = aws_iam_role.eks_fargate_pod_execution_role.name
+}
+
+resource "aws_kms_alias" "this" {
+  name          = "alias/eks/devops-project-eks-cluster"
+  target_key_id = aws_kms_key.this.id
+
+  lifecycle {
+    # Ignore the creation of the alias if it already exists.
+    prevent_destroy = true
+  }
+}
+
+resource "aws_cloudwatch_log_group" "this" {
+  name = "/aws/eks/devops-project-eks-cluster/cluster"
+
+  lifecycle {
+    ignore_changes = [name]
+  }
+}
+
+resource "aws_eip" "nat" {
+  count = length(module.eks.cluster_name) > 0 ? 0 : 1
+  vpc   = true
 }
 
 module "eks" {
