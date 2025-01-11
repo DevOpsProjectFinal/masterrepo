@@ -80,9 +80,6 @@ jobs:
           mkdir -p .kube
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --kubeconfig .kube/config
           echo "Kubeconfig saved to ~/.kube/config"
-
-      - name: Verify kubeconfig
-        run: |
           export KUBECONFIG=~/.kube/config
           kubectl get nodes
 
