@@ -79,11 +79,11 @@ jobs:
         run: |
           mkdir -p .kube
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --kubeconfig .kube/config
-          echo "Kubeconfig saved to $(pwd)/.kube/config"
+          echo "Kubeconfig saved to ~/.kube/config"
 
       - name: Verify kubeconfig
         run: |
-          export KUBECONFIG=$(pwd)/.kube/config
+          export KUBECONFIG=~/.kube/config
           kubectl get nodes
 
       - name: Helm Install Sample App
@@ -101,7 +101,7 @@ jobs:
 
       - name: Create HPA for the App
         run: |
-          kubectl apply -f k8s/hpa.yaml
+          kubectl apply -f ./k8s/hpa.yaml
       
       - name: Check HPA Status
         run: |
