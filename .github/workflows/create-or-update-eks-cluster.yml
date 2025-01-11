@@ -80,13 +80,14 @@ jobs:
         run: |
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
           kubectl config use-context ${{ secrets.EKS_CLUSTER_NAME }}
-        working-directory: ./terraform/eks-cluster
-        env:
-          TERRAFORM_CLI_PATH: ./terraform/eks-cluster
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
+        working-directory: ./terraform/eks-cluster
+        env:
+          TERRAFORM_CLI_PATH: ./terraform/eks-cluster
+        
 
       - name: Helm Install Sample App
         run: |
