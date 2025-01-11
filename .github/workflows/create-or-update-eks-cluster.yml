@@ -81,11 +81,23 @@ jobs:
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --kubeconfig .kube/config
           echo "Kubeconfig saved to $(pwd)/.kube/config"
 
+      - name: Verify kubeconfig
+        run: |
+          export KUBECONFIG=$(pwd)/.kube/config
+          kubectl get nodes
+
       - name: Helm Install Sample App
         run: |
+          # Add the Helm stable repository
           helm repo add stable https://charts.helm.sh/stable
+
+          # Update Helm repositories
           helm repo update
-          helm upgrade --install sample-app stable/nginx-ingress
+
+          # Install or upgrade the Nginx ingress controller
+          helm upgrade --install sample-app stable/nginx-ingress --namespace ingress-nginx --create-namespace
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
       - name: Create HPA for the App
         run: |
