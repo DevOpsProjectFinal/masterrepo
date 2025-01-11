@@ -124,8 +124,8 @@ jobs:
             --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
             --set image.tag=latest
             
-      # Step 16: Cleanup on Failure
+      # Cleanup on Failure
       - name: Terraform Destroy on Failure
-      if: ${{ failure() || cancelled() }}
-      run: terraform destroy -auto-approve
-      working-directory: ./terraform/eks-cluster
+        if: ${{ failure() || cancelled() }}
+        run: terraform destroy -auto-approve
+        working-directory: ./terraform/eks-cluster
