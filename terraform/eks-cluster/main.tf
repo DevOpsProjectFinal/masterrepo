@@ -74,16 +74,37 @@ resource "aws_iam_instance_profile" "karpenter_instance_profile" {
   role = aws_iam_role.eks_fargate_pod_execution_role.name
 }
 
-resource "aws_kms_alias" "this" {
-  name          = "alias/eks/devops-project-eks-cluster"
-  target_key_id = aws_kms_key.this.id
-
-  lifecycle {
-    # Ignore the creation of the alias if it already exists.
-    prevent_destroy = true
-  }
+# Declare KMS Key
+resource "aws_kms_key" "this" {
+  description = "KMS key for EKS cluster"
+  policy      = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Id": "key-default-1",
+  "Statement": [
+    {
+      "Sid": "Enable IAM User Permissions",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "kms:*",
+      "Resource": "*"
+    }
+  ]
+}
+POLICY
 }
 
+# Create KMS Alias
+resource "aws_kms_alias" "this" {
+  name          = "alias/eks/devops-project-eks-cluster"
+  target_key_id = aws_kms_key.this.id  # Reference the created KMS key
+
+  lifecycle {
+    prevent_destroy = true  # Prevent destruction of the alias
+  }
+}
 resource "aws_cloudwatch_log_group" "this" {
   name = "/aws/eks/devops-project-eks-cluster/cluster"
 
@@ -93,8 +114,9 @@ resource "aws_cloudwatch_log_group" "this" {
 }
 
 resource "aws_eip" "nat" {
-  count = length(module.eks.cluster_name) > 0 ? 0 : 1
-  vpc   = true
+  count = var.create_nat_eips ? 1 : 0
+
+  domain = "vpc"
 }
 
 module "eks" {
