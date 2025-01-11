@@ -385,9 +385,3 @@ variable "KarpenterInstanceProfile" {
   type        = string
   default     = "KarpenterInstanceProfile"
 }
-
-variable "create_new_resources" {
-  description = "Check wether to create new resources or not"
-  type        = bool
-  default     = false
-}
