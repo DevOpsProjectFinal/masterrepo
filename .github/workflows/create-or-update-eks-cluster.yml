@@ -97,7 +97,7 @@ jobs:
         run: terraform destroy -auto-approve
         working-directory: ./terraform/eks-cluster
 
-      Step 12: Deploy Backend API
+      # Step 12: Deploy Backend API
       - name: Deploy Backend API
         run: |
           helm upgrade --install backend-api ./deployment/backend \
@@ -106,7 +106,7 @@ jobs:
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-      Step 13: Deploy Frontend UI
+      # Step 13: Deploy Frontend UI
       - name: Deploy Frontend UI
         run: |
           helm upgrade --install frontend-ui ./deployment/frontend \
