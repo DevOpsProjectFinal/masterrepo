@@ -30,6 +30,15 @@ resource "aws_eks_fargate_profile" "default" {
 
   selector {
     namespace = "default"
+
+    # Optionally add labels to match specific pods
+    labels = {
+      environment = "dev"
+    }
+  }
+
+  selector {
+    namespace = "kube-system"
   }
 }
 
@@ -48,4 +57,13 @@ resource "aws_iam_role" "eks_fargate_pod_execution_role" {
       }
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "fargate_policies" {
+  for_each = toset([
+    "arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy",
+  ])
+
+  policy_arn = each.value
+  role      = aws_iam_role.eks_fargate_pod_execution_role.name
 }

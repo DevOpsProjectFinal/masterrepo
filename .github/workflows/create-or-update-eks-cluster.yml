@@ -104,10 +104,11 @@ jobs:
         run: |
           kubectl get hpa
       
-      - name: Cleanup
-        if: ${{ always() }}
-        run: |
-          terraform destroy -auto-approve
+      # Cleanup on Failure
+      - name: Terraform Destroy on Failure
+        if: ${{ failure() || cancelled() }}
+        run: terraform destroy -auto-approve
+        working-directory: ./terraform/eks-cluster
 
       # Step 12: Deploy Backend API
       # - name: Deploy Backend API

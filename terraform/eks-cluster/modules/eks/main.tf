@@ -18,13 +18,13 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
 
   eks_managed_node_groups = {
-    example = {
+    devops_project_eks_ng = {
       # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
       ami_type       = "AL2_x86_64"
       instance_types = ["t3.micro"]
 
       min_size = 1
-      max_size = 3
+      max_size = 10
       # This value is ignored after the initial creation
       # https://github.com/bryantbiggs/eks-desired-size-hack
       desired_size = 1
