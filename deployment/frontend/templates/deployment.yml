@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: {{ .Values.name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: 796973482644.dkr.ecr.us-east-1.amazonaws.com/frontend-ui:latest
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: 80
