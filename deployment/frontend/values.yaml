@@ -1,5 +1,5 @@
 name: frontend
-replicaCount: 2
+replicaCount: 1
 
 image:
   repository: frontend-app
@@ -35,7 +35,7 @@ resources:
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 5
+  maxReplicas: 1
   targetCPUUtilizationPercentage: 80
 
 nodeSelector: {}
