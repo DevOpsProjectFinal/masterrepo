@@ -40,6 +40,11 @@ resource "aws_eks_fargate_profile" "default" {
   selector {
     namespace = "kube-system"
   }
+
+  selectors {
+    namespace = "ingress-nginx"
+  }
+
 }
 
 resource "aws_iam_role" "eks_fargate_pod_execution_role" {
