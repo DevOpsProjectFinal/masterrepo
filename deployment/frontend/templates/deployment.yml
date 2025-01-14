@@ -27,6 +27,7 @@ spec:
           requests:
             cpu: {{ .Values.resources.requests.cpu }}
             memory: {{ .Values.resources.requests.memory }}
+      type: LoadBalancer
       nodeSelector: {{ toJson .Values.nodeSelector | nindent 8 }}
       tolerations: {{ toJson .Values.tolerations | nindent 8 }}
       affinity: {{ toJson .Values.affinity | nindent 8 }}
