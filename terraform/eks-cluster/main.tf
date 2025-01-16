@@ -41,7 +41,7 @@ resource "aws_eks_fargate_profile" "default" {
     namespace = "kube-system"
   }
 
-  selectors {
+  selector {
     namespace = "ingress-nginx"
   }
 
