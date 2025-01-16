@@ -20,6 +20,9 @@ module "eks" {
   # Pass subnets from the VPC module
   subnet_ids               = module.vpc.private_subnets
   control_plane_subnet_ids = module.vpc.intra_subnets
+
+  # IRSA for AWS Load Balancer Controller
+  enable_irsa = true
 }
 
 resource "aws_eks_fargate_profile" "default" {
