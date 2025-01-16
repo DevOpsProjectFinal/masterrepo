@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: backend-api
 spec:
+  type: LoadBalancer
   ports:
     - protocol: TCP
       port: 3000

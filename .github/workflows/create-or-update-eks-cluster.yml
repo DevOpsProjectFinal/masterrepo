@@ -3,7 +3,7 @@ name: Deploy to EKS
 on:
   push:
     branches:
-      - main
+      - infrastructure
 
 jobs:
   deploy:
@@ -31,49 +31,49 @@ jobs:
           echo "Cluster Status: $CLUSTER_STATUS"
       
       # Step 4: Clean Terraform directory
-      - name: Clean Terraform directory
-        run: |
-          rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
+      #- name: Clean Terraform directory
+      #  run: |
+      #    rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
 
       # Step 5: Set up Terraform
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.8.4
+      #- name: Set up Terraform
+      #  uses: hashicorp/setup-terraform@v1
+      #  with:
+      #    terraform_version: 1.8.4
 
       # Step 6: Terraform Init
-      - name: Terraform Init
-        run: terraform init -upgrade
-        working-directory: ./terraform/eks-cluster
+      #- name: Terraform Init
+      #  run: terraform init -upgrade
+      #  working-directory: ./terraform/eks-cluster
 
       # Step 7: Terraform Plan
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
-        working-directory: ./terraform/eks-cluster
+      #- name: Terraform Plan
+      #  run: terraform plan -out=tfplan
+      #  working-directory: ./terraform/eks-cluster
 
       # Step 8: Terraform Apply
-      - name: Terraform Apply
-        run: |
-          if [[ "$CLUSTER_EXISTS" == "NOT_FOUND" ]]; then
-            echo "Cluster does not exist. Creating a new EKS cluster..."
-            terraform apply -auto-approve tfplan
-          else
-            echo "Cluster exists. Updating the EKS cluster..."
-            terraform apply -refresh-only -auto-approve
-          fi
-        working-directory: ./terraform/eks-cluster
+      #- name: Terraform Apply
+      #  run: |
+      #    if [[ "$CLUSTER_EXISTS" == "NOT_FOUND" ]]; then
+      #      echo "Cluster does not exist. Creating a new EKS cluster..."
+      #      terraform apply -auto-approve tfplan
+      #    else
+      #      echo "Cluster exists. Updating the EKS cluster..."
+      #      terraform apply -refresh-only -auto-approve
+      #    fi
+      #  working-directory: ./terraform/eks-cluster
 
       # Step 9: Extract Terraform Outputs
-      - name: Extract Terraform Outputs
-        id: outputs
-        run: |
-          echo "EKS_CLUSTER_NAME=\"$(terraform output -raw cluster_name)\"" >> $GITHUB_ENV || exit 1
-          echo "REGION=\"$(terraform output -raw region)\"" >> $GITHUB_ENV || exit 1
-          echo "EKS_CLUSTER_ENDPOINT=\"$(terraform output -raw cluster_endpoint)\"" >> $GITHUB_ENV || exit 1
-          echo "EKS_CLUSTER_CA_DATA=\"$(terraform output -raw cluster_certificate_authority_data)\"" >> $GITHUB_ENV || exit 1
-        working-directory: ./terraform/eks-cluster
-        env:
-          TERRAFORM_CLI_PATH: ./terraform/eks-cluster
+      #- name: Extract Terraform Outputs
+      #  id: outputs
+      #  run: |
+      #    echo "EKS_CLUSTER_NAME=\"$(terraform output -raw cluster_name)\"" >> $GITHUB_ENV || exit 1
+      #    echo "REGION=\"$(terraform output -raw region)\"" >> $GITHUB_ENV || exit 1
+      #    echo "EKS_CLUSTER_ENDPOINT=\"$(terraform output -raw cluster_endpoint)\"" >> $GITHUB_ENV || exit 1
+      #    echo "EKS_CLUSTER_CA_DATA=\"$(terraform output -raw cluster_certificate_authority_data)\"" >> $GITHUB_ENV || exit 1
+      #  working-directory: ./terraform/eks-cluster
+      #  env:
+      #    TERRAFORM_CLI_PATH: ./terraform/eks-cluster
 
       - name: Download kubeconfig to local
         run: |
@@ -83,20 +83,20 @@ jobs:
           export KUBECONFIG=~/.kube/config
           kubectl get nodes
 
-      - name: Create HPA for the App
-        run: |
-          kubectl create namespace fargate-applications
-          kubectl apply -f ./k8s/hpa.yaml
+      #- name: Create HPA for the App
+      #  run: |
+      #    kubectl create namespace fargate-applications
+      #    kubectl apply -f ./k8s/hpa.yaml
       
-      - name: Check HPA Status
-        run: |
-          kubectl get hpa
+      #- name: Check HPA Status
+      #  run: |
+      #    kubectl get hpa
       
       # Cleanup on Failure
-      - name: Terraform Destroy on Failure
-        if: ${{ failure() || cancelled() }}
-        run: terraform destroy -auto-approve
-        working-directory: ./terraform/eks-cluster
+      #- name: Terraform Destroy on Failure
+      #  if: ${{ failure() || cancelled() }}
+      #  run: terraform destroy -auto-approve
+      #  working-directory: ./terraform/eks-cluster
 
       # Step 12: Deploy Backend API
       - name: Deploy Backend API
