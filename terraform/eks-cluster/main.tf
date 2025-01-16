@@ -39,10 +39,16 @@ resource "aws_eks_fargate_profile" "default" {
 
   selector {
     namespace = "kube-system"
+    labels = {
+      k8s-app = "kube-dns"
+    }
   }
 
   selector {
     namespace = "fargate-applications"
+    labels = {
+      environment = "dev"
+    }
   }
 
 }
