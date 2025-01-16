@@ -62,8 +62,14 @@ jobs:
             terraform apply -refresh-only -auto-approve
           fi
         working-directory: ./terraform/eks-cluster
+      
+      # Step 9: Cleanup on Failure
+      - name: Terraform Destroy on Failure
+        if: ${{ failure() || cancelled() }}
+        run: terraform destroy -auto-approve
+        working-directory: ./terraform/eks-cluster
 
-      # Step 9: Extract Terraform Outputs
+      # Step 10: Extract Terraform Outputs
       - name: Extract Terraform Outputs
         id: outputs
         run: |
@@ -76,6 +82,7 @@ jobs:
         env:
           TERRAFORM_CLI_PATH: ./terraform/eks-cluster
 
+      # Step 11: Download kubeconfig to local
       - name: Download kubeconfig to local
         run: |
           mkdir -p ~/.kube
@@ -84,17 +91,20 @@ jobs:
           export KUBECONFIG=~/.kube/config
           kubectl get nodes
 
+      # Step 12: Create Namespace and Deploy HPA
       - name: Create HPA for the App
         run: |
           kubectl create namespace fargate-applications
           kubectl apply -f ./k8s/hpa.yaml
-      
+
+      # Step 13: Deploy Backend API      
       - name: Check HPA Status
         run: |
           kubectl get hpa
 
-      # Step 12: Deploy Backend API
-      - name: Deploy Backend API
+
+      # Step 14: Deploy Backend API
+      - name: Create aws-load-balancer-controller
         run: |
           helm repo add eks https://aws.github.io/eks-charts
           helm repo update eks
@@ -102,16 +112,9 @@ jobs:
             -n kube-system \
             --set clusterName=${{ secrets.EKS_CLUSTER_NAME }} \
             --set serviceAccount.create=false \
-            --set region=${{ secrets.AWS_REGION }} \ 
             --set serviceAccount.name=aws-load-balancer-controller
       
-      # Cleanup on Failure
-      - name: Terraform Destroy on Failure
-        if: ${{ failure() || cancelled() }}
-        run: terraform destroy -auto-approve
-        working-directory: ./terraform/eks-cluster
-
-      # Step 12: Deploy Backend API
+      # Step 15: Deploy Backend API
       - name: Deploy Backend API
         run: |
           helm upgrade --install backend-api ./deployment/backend \
