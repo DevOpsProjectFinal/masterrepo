@@ -148,7 +148,7 @@ jobs:
         run: |
           helm upgrade --install backend-api ${{ github.workspace }}/deployment/backend \
             --set image.repository=${{ env.ECR_REPO }}/backend-api \
-            --set image.tag=latest --namespace ingress-nginx \
+            --set image.tag=latest --namespace fargate-applications \
             --debug
 
       # Step 7: Deploy Frontend UI to EKS
@@ -156,5 +156,5 @@ jobs:
         run: |
           helm upgrade --install frontend-ui ${{ github.workspace }}/deployment/frontend \
             --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
-            --set image.tag=latest --namespace ingress-nginx \
+            --set image.tag=latest --namespace fargate-applications \
             --debug

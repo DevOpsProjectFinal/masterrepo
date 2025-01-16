@@ -42,7 +42,7 @@ resource "aws_eks_fargate_profile" "default" {
   }
 
   selector {
-    namespace = "ingress-nginx"
+    namespace = "fargate-applications"
   }
 
 }
