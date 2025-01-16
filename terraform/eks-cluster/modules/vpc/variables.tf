@@ -8,6 +8,11 @@ variable "vpc_name" {
   default     = "vpc-devops-project-eks-cluster"
 }
 
+variable "cluster_name" {
+  description = "EKS Cluster name"
+  default     = "devops-project-eks-cluster"
+}
+
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   default     = "10.0.0.0/16"

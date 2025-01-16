@@ -92,15 +92,15 @@ jobs:
           kubectl get nodes
 
       # Step 12: Create Namespace and Deploy HPA
-      - name: Create HPA for the App
-        run: |
-          kubectl create namespace fargate-applications
-          kubectl apply -f ./k8s/hpa.yaml
+      #- name: Create HPA for the App
+      #  run: |
+      #    kubectl create namespace fargate-applications
+      #    kubectl apply -f ./k8s/hpa.yaml
 
       # Step 13: Deploy Backend API      
-      - name: Check HPA Status
-        run: |
-          kubectl get hpa
+      #- name: Check HPA Status
+      #  run: |
+      #    kubectl get hpa
 
 
       # Step 14: Deploy Backend API

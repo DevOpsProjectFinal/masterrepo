@@ -8,6 +8,7 @@ resource "random_id" "fargate_profile_id" {
 
 module "vpc" {
   source  = "./modules/vpc"
+  cluster_name = var.cluster_name
 }
 
 module "eks" {
@@ -30,25 +31,14 @@ resource "aws_eks_fargate_profile" "default" {
 
   selector {
     namespace = "default"
-
-    # Optionally add labels to match specific pods
-    labels = {
-      environment = "dev"
-    }
   }
 
   selector {
     namespace = "kube-system"
-    labels = {
-      k8s-app = "kube-dns"
-    }
   }
 
   selector {
     namespace = "fargate-applications"
-    labels = {
-      environment = "dev"
-    }
   }
 
 }
