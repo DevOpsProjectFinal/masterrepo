@@ -22,6 +22,17 @@ module "eks" {
   control_plane_subnet_ids = module.vpc.intra_subnets
 }
 
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    # This requires the awscli to be installed locally where Terraform is executed
+    args = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+  }
+}
+
 resource "aws_eks_fargate_profile" "default" {
   cluster_name         = module.eks.cluster_name
   fargate_profile_name = "fargate-profile"
@@ -67,18 +78,6 @@ resource "aws_iam_role_policy_attachment" "fargate_policies" {
 
   policy_arn = each.value
   role      = aws_iam_role.eks_fargate_pod_execution_role.name
-}
-
-resource "aws_eks_fargate_profile" "load_balancer_controller" {
-  cluster_name           = aws_eks_cluster.example.name
-  fargate_profile_name   = "lb-controller-fargate-profile"
-  pod_execution_role_arn = aws_iam_role.eks_fargate_pod_execution_role.arn
-
-  subnet_ids = aws_subnet.example[*].id
-
-  selector {
-    namespace = "kube-system"
-  }
 }
 
 resource "aws_iam_role" "load_balancer_controller" {
