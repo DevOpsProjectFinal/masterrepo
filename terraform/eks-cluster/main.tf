@@ -68,3 +68,53 @@ resource "aws_iam_role_policy_attachment" "fargate_policies" {
   policy_arn = each.value
   role      = aws_iam_role.eks_fargate_pod_execution_role.name
 }
+
+resource "aws_eks_fargate_profile" "load_balancer_controller" {
+  cluster_name           = aws_eks_cluster.example.name
+  fargate_profile_name   = "lb-controller-fargate-profile"
+  pod_execution_role_arn = aws_iam_role.eks_fargate_pod_execution_role.arn
+
+  subnet_ids = aws_subnet.example[*].id
+
+  selector {
+    namespace = "kube-system"
+  }
+}
+
+resource "aws_iam_role" "load_balancer_controller" {
+  name = "eks-load-balancer-controller-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "eks.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "load_balancer_controller_policy" {
+  name = "load-balancer-controller-policy"
+
+  policy = file("${path.module}/iam_policy.json") # Replace with your policy file path
+}
+
+resource "aws_iam_role_policy_attachment" "attach_lb_controller_policy" {
+  policy_arn = aws_iam_policy.load_balancer_controller_policy.arn
+  role       = aws_iam_role.load_balancer_controller.name
+}
+
+resource "kubernetes_service_account" "lb_controller" {
+  metadata {
+    name      = "aws-load-balancer-controller"
+    namespace = "kube-system"
+    annotations = {
+      "eks.amazonaws.com/role-arn" = aws_iam_role.load_balancer_controller.arn
+    }
+  }
+}
