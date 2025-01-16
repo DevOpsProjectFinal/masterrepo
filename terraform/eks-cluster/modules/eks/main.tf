@@ -28,6 +28,7 @@ module "eks" {
       # This value is ignored after the initial creation
       # https://github.com/bryantbiggs/eks-desired-size-hack
       desired_size = 1
+      disk_size        = 10  # Specify the root volume size in GB (minimum is 10 GB)
     }
   }
 }
