@@ -84,6 +84,25 @@ resource "aws_iam_role" "load_balancer_controller" {
   name = "eks-load-balancer-controller-role"
 
   assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::${module.eks.aws_account_id}:oidc-provider/${module.eks.eks_oidc_id}"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${local.cluster_oidc_issuer}:aud" : "sts.amazonaws.com"
+            "${local.cluster_oidc_issuer}:sub" : "system:serviceaccount:kube-system:aws-load-balancer-controller"
+          }
+        }
+      }
+    ]
+  })
+
+  assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
@@ -92,6 +111,19 @@ resource "aws_iam_role" "load_balancer_controller" {
           Service = "eks.amazonaws.com"
         },
         Action = "sts:AssumeRole"
+      },
+      {
+        "Effect": "Allow",
+        "Principal": {
+            "Federated": "arn:aws:iam::${module.eks.aws_account_id}:${module.eks.eks_oidc_id}"
+        },
+        "Action": "sts:AssumeRoleWithWebIdentity",
+        "Condition": {
+            "StringEquals": {
+                "${module.eks.eks_oidc_id}::aud": "sts.amazonaws.com",
+                "${module.eks.eks_oidc_id}:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller"
+            }
+        }
       }
     ]
   })

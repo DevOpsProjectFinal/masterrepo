@@ -46,3 +46,13 @@ output "cluster_certificate_authority_data" {
   description = "Base64 encoded certificate data required to communicate with the cluster"
   value       = module.eks.cluster_certificate_authority_data
 }
+
+output "aws_account_id" {
+  description = "AWS Account ID"
+  value       = var.aws_account_id
+}
+
+output "eks_oidc_id" {
+  description = "The OIDC ID for the EKS Cluster"
+  value = module.eks.oidc_provider 
+}

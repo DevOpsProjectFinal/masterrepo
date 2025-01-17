@@ -30,3 +30,8 @@ variable "subnet_ids" {
   type        = list(string)
   default     = []
 }
+
+variable "aws_account_id" {
+  description = "List of subnets for worker nodes"
+  default     = 796973482644
+}
