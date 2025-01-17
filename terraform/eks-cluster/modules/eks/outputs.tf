@@ -56,3 +56,8 @@ output "eks_oidc_id" {
   description = "The OIDC ID for the EKS Cluster"
   value = module.eks.oidc_provider 
 }
+
+output "oidc_provider_arn" {
+  description = "The ARN of the OIDC Provider if `enable_irsa = true`"
+  value       = module.eks.oidc_provider_arn
+}

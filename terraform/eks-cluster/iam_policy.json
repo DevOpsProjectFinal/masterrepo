@@ -43,7 +43,8 @@
                 "elasticloadbalancing:DescribeTrustStores",
                 "elasticloadbalancing:DescribeListenerAttributes",
                 "elasticloadbalancing:DescribeCapacityReservation",
-                "ec2:CreateSecurityGroup"
+                "ec2:CreateSecurityGroup",
+                "elasticloadbalancing:AddTags"
             ],
             "Resource": "*"
         },

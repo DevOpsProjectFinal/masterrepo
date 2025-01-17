@@ -3,6 +3,6 @@ image:
   repository: 796973482644.dkr.ecr.us-east-1.amazonaws.com/backend-api
   tag: latest
 service:
-  type: ClusterIP
+  type: LoadBalancer
   port: 3000
 

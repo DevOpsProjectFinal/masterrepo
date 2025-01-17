@@ -4,13 +4,10 @@ metadata:
   name: backend-api
   namespace: fargate-applications
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
-    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
-    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: eipalloc-0d8f2c0f17aeb24da,eipalloc-086f78e84e2130bde
-    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
-    service.beta.kubernetes.io/aws-load-balancer-subnets: subnet-08a711c08c7d76619,subnet-09092a7d4d4415384,subnet-0662aaaf54124b7c8
-    service.beta.kubernetes.io/aws-load-balancer-type: nlb
-    service.beta.kubernetes.io/aws-load-balancer-security-group: "sg-0f3499257a5877393"
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "HTTP" # Or HTTPS
+    service.beta.kubernetes.io/aws-load-balancer-type: alb
 spec:
   type: LoadBalancer
   ports:
@@ -18,4 +15,6 @@ spec:
       port: 3000
       targetPort: 3000
   selector:
-    app.kubernetes.io/name: backend-api
+    - namespace: "fargate-applications"
+      labels:
+        tier: "backend"

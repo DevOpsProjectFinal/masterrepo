@@ -50,6 +50,16 @@ resource "aws_eks_fargate_profile" "default" {
 
   selector {
     namespace = "fargate-applications"
+    labels = {
+      "tier": "frontend"
+    }
+  }
+
+  selector {
+    namespace = "fargate-applications"
+    labels = {
+      "tier": "backend"
+    }
   }
 
 }
@@ -66,6 +76,19 @@ resource "aws_iam_role" "eks_fargate_pod_execution_role" {
           Service = "eks-fargate-pods.amazonaws.com"
         },
         Action = "sts:AssumeRole"
+      },
+      {
+        "Effect": "Allow",
+        "Principal": {
+            "Federated": module.eks.oidc_provider_arn
+        },
+        "Action": "sts:AssumeRoleWithWebIdentity",
+        "Condition": {
+            "StringEquals": {
+                "${module.eks.eks_oidc_id}::aud": "sts.amazonaws.com",
+                "${module.eks.eks_oidc_id}:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller"
+            }
+        }
       }
     ]
   })
@@ -84,25 +107,6 @@ resource "aws_iam_role" "load_balancer_controller" {
   name = "eks-load-balancer-controller-role"
 
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Federated = "arn:aws:iam::${module.eks.aws_account_id}:oidc-provider/${module.eks.eks_oidc_id}"
-        }
-        Action = "sts:AssumeRoleWithWebIdentity"
-        Condition = {
-          StringEquals = {
-            "${local.cluster_oidc_issuer}:aud" : "sts.amazonaws.com"
-            "${local.cluster_oidc_issuer}:sub" : "system:serviceaccount:kube-system:aws-load-balancer-controller"
-          }
-        }
-      }
-    ]
-  })
-
-  assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
@@ -115,7 +119,7 @@ resource "aws_iam_role" "load_balancer_controller" {
       {
         "Effect": "Allow",
         "Principal": {
-            "Federated": "arn:aws:iam::${module.eks.aws_account_id}:${module.eks.eks_oidc_id}"
+            "Federated": module.eks.oidc_provider_arn
         },
         "Action": "sts:AssumeRoleWithWebIdentity",
         "Condition": {
@@ -140,12 +144,45 @@ resource "aws_iam_role_policy_attachment" "attach_lb_controller_policy" {
   role       = aws_iam_role.load_balancer_controller.name
 }
 
-resource "kubernetes_service_account" "lb_controller" {
+
+
+locals {
+  kube_system_namespace = "kube-system"
+  alb_service_account_name = "alb-controller"
+  efs_service_account_name = "efs-controller"
+  system_service_accounts = [
+    "${local.kube_system_namespace}:${local.alb_service_account_name}"
+  ]
+}
+
+resource "kubernetes_service_account" "alb" {
   metadata {
-    name      = "aws-load-balancer-controller"
-    namespace = "kube-system"
+    name = local.alb_service_account_name
+    namespace = local.kube_system_namespace
+    labels = {
+      "app.kubernetes.io/name" = "aws-load-balancer-controller"
+      "app.kubernetes.io/component" = "controller"
+    }
     annotations = {
-      "eks.amazonaws.com/role-arn" = aws_iam_role.load_balancer_controller.arn
+      "eks.amazonaws.com/role-arn" = module.vpc_cni_irsa.iam_role_arn
     }
   }
+}
+
+module "vpc_cni_irsa" {
+
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "~> 4.12"
+
+  role_name_prefix      = "vpc-cni-irsa-"
+
+  attach_load_balancer_controller_policy = true
+
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = local.system_service_accounts
+    }
+  }
+
 }
