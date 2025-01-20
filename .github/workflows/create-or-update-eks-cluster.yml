@@ -52,16 +52,16 @@ jobs:
         working-directory: ./terraform/eks-cluster
 
       # Step 8: Terraform Apply
-      - name: Terraform Apply
-        run: |
-          if [[ "$CLUSTER_EXISTS" == "NOT_FOUND" ]]; then
-            echo "Cluster does not exist. Creating a new EKS cluster..."
-            terraform apply -auto-approve tfplan
-          else
-            echo "Cluster exists. Updating the EKS cluster..."
-            terraform apply -refresh-only -auto-approve
-          fi
-        working-directory: ./terraform/eks-cluster
+      #- name: Terraform Apply
+      #  run: |
+      #    if [[ "$CLUSTER_EXISTS" == "NOT_FOUND" ]]; then
+      #      echo "Cluster does not exist. Creating a new EKS cluster..."
+      #      terraform apply -auto-approve tfplan
+      #    else
+      #      echo "Cluster exists. Updating the EKS cluster..."
+      #      terraform apply -refresh-only -auto-approve
+      #    fi
+      #  working-directory: ./terraform/eks-cluster
       
       # Step 9: Cleanup on Failure
       - name: Terraform Destroy on Failure
