@@ -106,7 +106,7 @@ jobs:
             -n kube-system \
             --set clusterName=${{ secrets.EKS_CLUSTER_NAME }} \
             --set serviceAccount.create=false \
-            --set vpcId=$(terraform output vpc_id | tr -d '"') \
+            --set vpcId=$(terraform output vpc_id ) \
             --set serviceAccount.name=aws-load-balancer-controller
       
       # Step 15: Deploy Backend API
