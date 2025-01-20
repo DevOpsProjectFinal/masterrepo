@@ -49,9 +49,7 @@ jobs:
       - name: Terraform Init
         run: terraform init -upgrade
         working-directory: ./terraform/eks-cluster
-        env:
-          TERRAFORM_CLI_PATH: ./terraform/eks-cluster
-
+        
       # Step 7: Terraform Plan
       - name: Terraform Plan
         run: terraform plan -out=tfplan
