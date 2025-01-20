@@ -3,20 +3,20 @@ kind: Deployment
 metadata:
   name: frontend
   labels:
-    app: {{ .Values.name }}
+    tier: frontend
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Values.name }}
+      tier: frontend
   template:
     metadata:
       labels:
-        app: {{ .Values.name }}
+        tier: frontend
     spec:
       containers:
       - name: {{ .Values.name }}
-        image: 796973482644.dkr.ecr.us-east-1.amazonaws.com/frontend-ui:latest
+        image: 711387102542.dkr.ecr.us-east-1.amazonaws.com/frontend-ui:latest
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: 80

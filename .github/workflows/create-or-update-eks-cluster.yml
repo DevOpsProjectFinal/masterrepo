@@ -110,7 +110,7 @@ jobs:
             --set clusterName=${{ secrets.EKS_CLUSTER_NAME }} \
             --set serviceAccount.create=false \
             --set vpcId=VPC_ID \
-            --set serviceAccount.name=aws-load-balancer-controller
+            --set serviceAccount.name=alb-controller
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
 

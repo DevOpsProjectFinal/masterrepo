@@ -33,5 +33,5 @@ variable "subnet_ids" {
 
 variable "aws_account_id" {
   description = "List of subnets for worker nodes"
-  default     = 796973482644
+  default     = 711387102542
 }

@@ -6,15 +6,15 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: backend-api
+      tier: backend
   template:
     metadata:
       labels:
-        app: backend-api
+        tier: backend
     spec:
       containers:
         - name: backend-api
-          image: 796973482644.dkr.ecr.us-east-1.amazonaws.com/backend-api:latest
+          image: 711387102542.dkr.ecr.us-east-1.amazonaws.com/backend-api:latest
           ports:
             - containerPort: 3000
       type: LoadBalancer

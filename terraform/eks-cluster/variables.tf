@@ -181,7 +181,7 @@ variable "cluster_name" {
 variable "account_id" {
   description = "AWS account ID"
   type        = string
-  default     = "796973482644"
+  default     = "711387102542"
 }
 
 ################################################################################
