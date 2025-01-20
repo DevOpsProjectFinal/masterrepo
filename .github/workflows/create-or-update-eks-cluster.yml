@@ -114,24 +114,6 @@ jobs:
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-      # wait for load balance controller to be created
-      - name: Check for AWS Load Balancer Controller Pods
-        run: |
-          for i in {1..10}; do
-            kubectl get pods -n kube-system -l eks/name=aws-load-balancer-controller && break
-            echo "Waiting for pods to be created..."
-            sleep 10
-          done
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
-
-      # Check for loadbalancer controller pods to be ready
-      - name: Wait for AWS Load Balancer Controller Pods to be Ready
-        run: |
-          kubectl wait --for=condition=ready pod -l eks/name=aws-load-balancer-controller -n kube-system --timeout=600s
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
-      
       # Step 15: Deploy Backend API
       - name: Deploy Backend API
         run: |
