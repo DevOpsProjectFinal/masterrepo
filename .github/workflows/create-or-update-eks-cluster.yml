@@ -130,7 +130,7 @@ jobs:
         run: |
           kubectl wait --for=condition=ready pod -l eks/name=aws-load-balancer-controller -n kube-system --timeout=600s
         env:
-        KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
       
       # Step 15: Deploy Backend API
       - name: Deploy Backend API
