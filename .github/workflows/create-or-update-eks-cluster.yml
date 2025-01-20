@@ -54,9 +54,7 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -out=tfplan
         working-directory: ./terraform/eks-cluster
-        env:
-          TERRAFORM_CLI_PATH: ./terraform/eks-cluster   
-
+        
       # Step 8: Terraform Apply
       - name: Terraform Apply
         run: |
@@ -68,9 +66,7 @@ jobs:
             terraform apply -refresh-only -auto-approve
           fi
         working-directory: ./terraform/eks-cluster
-        env:
-          TERRAFORM_CLI_PATH: ./terraform/eks-cluster
-
+        
       # Step 10: Extract Terraform Outputs
       - name: Extract Terraform Outputs
         id: outputs
@@ -83,9 +79,7 @@ jobs:
           echo "INSTANCE_PROFILE_NAME=\"$(terraform-bin output -raw KarpenterInstanceProfile)\"" >> $GITHUB_ENV || exit 1
           echo "VPC_ID=\"$(terraform-bin output -raw vpc_id)\"" >> $GITHUB_ENV || exit 1
         working-directory: ./terraform/eks-cluster
-        env:
-          TERRAFORM_CLI_PATH: ./terraform/eks-cluster
-
+        
       # Step 11: Download kubeconfig to local
       - name: Download kubeconfig to local
         run: |
