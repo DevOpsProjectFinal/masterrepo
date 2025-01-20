@@ -17,6 +17,4 @@ spec:
       port: {{ .Values.service.port }}
       targetPort: 80
   selector:
-    - namespace: "fargate-applications"
-      labels:
-        tier: "frontend"
+    tier: "frontend"
