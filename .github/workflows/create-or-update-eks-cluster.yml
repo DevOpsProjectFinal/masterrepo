@@ -115,12 +115,11 @@ jobs:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
   eks-cluster-deployments:
+    needs: approval
     runs-on: ubuntu-latest
-
     steps:
       # Step 15: Deploy Backend API
       - name: Deploy Backend API
-        environment: qa  # Define the target environment
         run: |
           helm upgrade --install backend-api ./deployment/backend \
            --set image.repository=${{ env.ECR_REPO }}/backend-api \
