@@ -41,6 +41,10 @@ jobs:
         with:
           terraform_version: 1.8.4
 
+      # Step 5: Add Terraform to PATH
+      - name: Add Terraform to PATH
+        run: echo "/usr/local/bin/terraform" >> $GITHUB_PATH
+
       # Step 6: Terraform Init
       - name: Terraform Init
         run: terraform init -upgrade
@@ -68,11 +72,22 @@ jobs:
       - name: Extract Terraform Outputs
         id: outputs
         run: |
-          echo "EKS_CLUSTER_NAME=\"$(terraform output -raw cluster_name)\"" >> $GITHUB_ENV || exit 1
-          echo "REGION=\"$(terraform output -raw region)\"" >> $GITHUB_ENV || exit 1
-          echo "EKS_CLUSTER_ENDPOINT=\"$(terraform output -raw cluster_endpoint)\"" >> $GITHUB_ENV || exit 1
-          echo "EKS_CLUSTER_CA_DATA=\"$(terraform output -raw cluster_certificate_authority_data)\"" >> $GITHUB_ENV || exit 1
-          echo "VPC_ID=\"$(terraform output -raw vpc_id)\"" >> $GITHUB_ENV || exit 1
+          # Initialize Terraform (only required if not done earlier)
+          terraform init || exit 1
+
+          # Extract Terraform outputs with debug logs
+          for OUTPUT in cluster_name region cluster_endpoint cluster_certificate_authority_data vpc_id; do
+            VALUE=$(terraform output -raw $OUTPUT 2>/dev/null || echo "ERROR")
+            if [ "$VALUE" = "ERROR" ]; then
+              echo "Error: Unable to retrieve Terraform output: $OUTPUT" >&2
+              exit 1
+            fi
+            echo "${OUTPUT^^}=\"$VALUE\"" >> $GITHUB_ENV
+          done
+
+          # Debug: Show extracted environment variables
+          echo "Extracted Terraform outputs:"
+          cat $GITHUB_ENV
         working-directory: ./terraform/eks-cluster
         env:
           TERRAFORM_CLI_PATH: ./terraform/eks-cluster
@@ -106,7 +121,7 @@ jobs:
             -n kube-system \
             --set clusterName=${{ secrets.EKS_CLUSTER_NAME }} \
             --set serviceAccount.create=false \
-            --set vpcId=$(terraform output vpc_id ) \
+            --set vpcId=vpc_id \
             --set serviceAccount.name=aws-load-balancer-controller
       
       # Step 15: Deploy Backend API
