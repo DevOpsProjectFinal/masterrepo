@@ -43,7 +43,7 @@ jobs:
 
       # Step 5: Add Terraform to PATH
       - name: Add Terraform to PATH
-        run: echo "/usr/local/bin/terraform" >> $GITHUB_PATH
+        run: echo "$(pwd)/terraform/eks-cluster" >> $GITHUB_PATH
 
       # Step 6: Terraform Init
       - name: Terraform Init
@@ -53,7 +53,7 @@ jobs:
       # Step 7: Terraform Plan
       - name: Terraform Plan
         run: terraform plan -out=tfplan
-        working-directory: ./terraform/eks-cluster
+        working-directory: ./terraform/eks-cluster      
 
       # Step 8: Terraform Apply
       - name: Terraform Apply
@@ -66,15 +66,11 @@ jobs:
             terraform apply -refresh-only -auto-approve
           fi
         working-directory: ./terraform/eks-cluster
-      
-      
+
       # Step 10: Extract Terraform Outputs
       - name: Extract Terraform Outputs
         id: outputs
         run: |
-          # Initialize Terraform (only required if not done earlier)
-          terraform init || exit 1
-
           # Extract Terraform outputs with debug logs
           for OUTPUT in cluster_name region cluster_endpoint cluster_certificate_authority_data vpc_id; do
             VALUE=$(terraform output -raw $OUTPUT 2>/dev/null || echo "ERROR")
