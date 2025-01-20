@@ -71,19 +71,13 @@ jobs:
       - name: Extract Terraform Outputs
         id: outputs
         run: |
-          # Extract Terraform outputs with debug logs
-          for OUTPUT in cluster_name region cluster_endpoint cluster_certificate_authority_data vpc_id; do
-            VALUE=$(terraform output -raw $OUTPUT 2>/dev/null || echo "ERROR")
-            if [ "$VALUE" = "ERROR" ]; then
-              echo "Error: Unable to retrieve Terraform output: $OUTPUT" >&2
-              exit 1
-            fi
-            echo "${OUTPUT^^}=\"$VALUE\"" >> $GITHUB_ENV
-          done
-
-          # Debug: Show extracted environment variables
-          echo "Extracted Terraform outputs:"
-          cat $GITHUB_ENV
+          set -e
+          echo "EKS_CLUSTER_NAME=$(terraform output -raw cluster_name)\"" >> $GITHUB_ENV || exit 1
+          echo "REGION=\"$(terraform output -raw region)\"" >> $GITHUB_ENV || exit 1
+          echo "EKS_CLUSTER_ENDPOINT=\"$(terraform output -raw cluster_endpoint)\"" >> $GITHUB_ENV || exit 1
+          echo "EKS_CLUSTER_CA_DATA=\"$(terraform output -raw cluster_certificate_authority_data)\"" >> $GITHUB_ENV || exit 1
+          echo "INSTANCE_PROFILE_NAME=\"$(terraform output -raw KarpenterInstanceProfile)\"" >> $GITHUB_ENV || exit 1
+          echo "VPC_ID=\"$(terraform output -raw vpc_id)\"" >> $GITHUB_ENV || exit 1
         working-directory: ./terraform/eks-cluster
         env:
           TERRAFORM_CLI_PATH: ./terraform/eks-cluster
