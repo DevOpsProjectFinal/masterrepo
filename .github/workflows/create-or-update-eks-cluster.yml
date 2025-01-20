@@ -111,6 +111,13 @@ jobs:
             --set serviceAccount.create=false \
             --set vpcId=VPC_ID \
             --set serviceAccount.name=aws-load-balancer-controller
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+
+      # Step 4: Wait for the AWS Load Balancer Controller pods to be running
+      - name: Wait for AWS Load Balancer Controller pods to be running
+        run: |
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=aws-load-balancer-controller -n kube-system --timeout=600s
       
       # Step 15: Deploy Backend API
       - name: Deploy Backend API
