@@ -63,12 +63,7 @@ jobs:
           fi
         working-directory: ./terraform/eks-cluster
       
-      # Step 9: Cleanup on Failure
-      - name: Terraform Destroy on Failure
-        if: ${{ failure() || cancelled() }}
-        run: terraform destroy -auto-approve
-        working-directory: ./terraform/eks-cluster
-
+      
       # Step 10: Extract Terraform Outputs
       - name: Extract Terraform Outputs
         id: outputs
@@ -102,7 +97,6 @@ jobs:
       #  run: |
       #    kubectl get hpa
 
-
       # Step 14: Deploy Backend API
       - name: Create aws-load-balancer-controller
         run: |
@@ -132,3 +126,10 @@ jobs:
             --set image.tag=latest --namespace fargate-applications --create-namespace
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
+
+
+      # Step 9: Cleanup on Failure
+      - name: Terraform Destroy on Failure
+        if: ${{ failure() || cancelled() }}
+        run: terraform destroy -auto-approve
+        working-directory: ./terraform/eks-cluster
