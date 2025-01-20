@@ -115,8 +115,8 @@ jobs:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
   eks-cluster-deployments:
-    needs: approval
     runs-on: ubuntu-latest
+    environment: qa  # Define the target environment
     steps:
       # Step 15: Deploy Backend API
       - name: Deploy Backend API
