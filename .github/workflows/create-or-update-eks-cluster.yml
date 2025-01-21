@@ -84,13 +84,22 @@ jobs:
     needs: [eks-cluster, wait-for-approval]
 
     steps:
+      # Step 1: Set up AWS CLI Credentials
+      - name: Set up AWS CLI Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 2: Configure kubectl
       - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --kubeconfig ~/.kube/config
           echo "KUBECONFIG=~/.kube/config" >> $GITHUB_ENV
 
-      # Step 10: Deploy Backend API
+      # Step 3: Deploy Backend API
       - name: Deploy Backend API
         run: |
           helm upgrade --install backend-api ./deployment/backend \
@@ -99,7 +108,7 @@ jobs:
         env:
           KUBECONFIG: ~/.kube/config
 
-      # Step 11: Deploy Frontend UI
+      # Step 4: Deploy Frontend UI
       - name: Deploy Frontend UI
         run: |
           helm upgrade --install frontend-ui ./deployment/frontend \
