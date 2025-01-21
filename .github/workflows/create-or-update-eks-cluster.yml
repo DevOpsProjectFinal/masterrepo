@@ -99,11 +99,6 @@ jobs:
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --kubeconfig ~/.kube/config
           echo "KUBECONFIG=~/.kube/config" >> $GITHUB_ENV
       
-      - name: Verify Kubernetes Context
-        run: kubectl config current-context
-        env:
-          KUBECONFIG: ~/.kube/config
-      
       - name: Create Namespace
         run: |
           kubectl create namespace fargate-applications || echo "Namespace already exists"
