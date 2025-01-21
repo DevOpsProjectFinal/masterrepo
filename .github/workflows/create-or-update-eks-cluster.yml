@@ -114,31 +114,31 @@ jobs:
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
-  eks-cluster-deployments:
-    runs-on: ubuntu-latest
-    environment: qa  # Define the target environment
-    steps:
-      # Step 15: Deploy Backend API
-      - name: Deploy Backend API
-        run: |
-          helm upgrade --install backend-api ./deployment/backend \
-           --set image.repository=${{ env.ECR_REPO }}/backend-api \
-           --set image.tag=latest --namespace fargate-applications --create-namespace
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
-
-      # Step 13: Deploy Frontend UI
-      - name: Deploy Frontend UI
-        run: |
-          helm upgrade --install frontend-ui ./deployment/frontend \
-            --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
+    eks-cluster-deployments:
+      runs-on: ubuntu-latest
+      environment: qa  # Define the target environment
+      steps:
+        # Step 15: Deploy Backend API
+        - name: Deploy Backend API
+          run: |
+            helm upgrade --install backend-api ./deployment/backend \
+            --set image.repository=${{ env.ECR_REPO }}/backend-api \
             --set image.tag=latest --namespace fargate-applications --create-namespace
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+          env:
+            KUBECONFIG: ${{ secrets.KUBECONFIG }}
+
+        # Step 13: Deploy Frontend UI
+        - name: Deploy Frontend UI
+          run: |
+            helm upgrade --install frontend-ui ./deployment/frontend \
+              --set image.repository=${{ env.ECR_REPO }}/frontend-ui \
+              --set image.tag=latest --namespace fargate-applications --create-namespace
+          env:
+            KUBECONFIG: ${{ secrets.KUBECONFIG }}
 
 
-      # Step 9: Cleanup on Failure
-      #- name: Terraform Destroy on Failure
-      #  if: ${{ failure() || cancelled() }}
-      #  run: terraform destroy -auto-approve
-      #  working-directory: ./terraform/eks-cluster
+        # Step 9: Cleanup on Failure
+        #- name: Terraform Destroy on Failure
+        #  if: ${{ failure() || cancelled() }}
+        #  run: terraform destroy -auto-approve
+        #  working-directory: ./terraform/eks-cluster
