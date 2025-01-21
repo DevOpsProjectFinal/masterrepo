@@ -1,11 +1,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Chart.Name }}
+  name: backend-api
   namespace: fargate-applications
-  labels:
-    app: {{ .Chart.Name }}
-    tier: "backend"
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-type: "external"
     service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
@@ -18,4 +15,7 @@ spec:
       port: 3000
       targetPort: 3000
   selector:
-    tier: "backend"
+    - namespace: "fargate-applications"
+      labels:
+        tier: "backend"
+        app: "backend"
